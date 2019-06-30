@@ -1,0 +1,11 @@
+: 1
+name: KCEngine
+version: 0.1.0-a.0.z
+summary: KCEngine C++ executable
+license: proprietary
+description-file: README.md
+url: https://example.org/KCEngine
+email: christianol_01@hotmail.com
+depends: * build2 >= 0.10.0
+depends: * bpkg >= 0.10.0
+#depends: libhello ^1.0.0
