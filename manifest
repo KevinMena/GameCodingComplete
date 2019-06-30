@@ -1,6 +1,6 @@
 : 1
 name: KCEngine
-version: 0.1.0-a.0.z
+version: 0.1.0-a.1
 summary: KCEngine C++ executable
 license: proprietary
 description-file: README.md
