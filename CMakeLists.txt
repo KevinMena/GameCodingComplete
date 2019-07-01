@@ -4,16 +4,16 @@ if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
+set(ENGINE_SOURCE_FOLDER engine)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/static)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(INSTALL_DIRECTORY ${CMAKE_BINARY_DIR}/../${ENGINE_SOURCE_FOLDER})
+set(INSTALL_DIRECTORY ${CMAKE_BINARY_DIR}/${ENGINE_SOURCE_FOLDER})
 
 project(kch_engine)
 
 set(CMAKE_CXX_STANDARD 17)
-
-set(ENGINE_SOURCE_FOLDER engine)
 
 file(GLOB_RECURSE KCH_ENGINE_SRC
     "${ENGINE_SOURCE_FOLDER}/src/*.c"
