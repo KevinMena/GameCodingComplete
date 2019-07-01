@@ -35,3 +35,11 @@
 *.out
 *.app
 
+# Build Folder
+build/
+Build/
+
+# VS Code
+
+.exe/
+.vscode/
