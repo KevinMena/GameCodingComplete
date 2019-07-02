@@ -3,8 +3,6 @@
 #include "test/class_test.hpp"
 #include "utils/stopwatch.hpp"
 
-#include <chrono>
-
 int main(int argc, char **argv) {
 
   printf("I'm here: %s\n", argv[0]);
@@ -19,11 +17,11 @@ int main(int argc, char **argv) {
   }
   watch.Stop();
 
-  auto times = watch.GetLaps<std::chrono::milliseconds>();
+  auto times = watch.GetLaps<Stopwatch::us>();
 
   for (int i = 0; i < times.size(); i++)
   {
-    printf("Lap %d: %lld ms\n",i, times[i]);
+    printf("Lap %d: %lld us\n",i, times[i]);
   }
   
 

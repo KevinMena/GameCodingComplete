@@ -6,17 +6,34 @@
 #include <utility>
 #include <vector>
 
+/* Namespace for Stopwatch related things */
 namespace Stopwatch {
 
-/* Stopwatch to count time based on std::chrono. TODO: add typedefs for other chrono common precisions */
+/* Nanoseconds */
+using ns = typename std::chrono::nanoseconds;
+
+/* Microseconds */
+using us = typename std::chrono::microseconds;
+
+/* Milliseconds */
+using ms = typename std::chrono::milliseconds;
+
+/* Seconds */
+using sec = typename std::chrono::seconds;
+
+/* Stopwatch to count time based on std::chrono */
 class Stopwatch {
 public:
+
   /* Type of Clock we are using */
   using clock = typename std::chrono::high_resolution_clock;
+
   /* Type of each time point we take from our clock */
   using time_pt = typename clock::time_point;
+
   /* The basic precision of our clock */
-  using precision_pt = typename std::chrono::nanoseconds;
+  using precision_pt = ns;
+
   /* The representation in basic integer type of a duration of our clock */
   using elapsed_pt = typename precision_pt::rep;
 
@@ -165,6 +182,7 @@ public:
 private:
   /* Time at the start of Stopwatch */
   time_pt m_startTime;
+
   /* Time at the end of Stopwatch */
   laps_pt m_laps;
 };
