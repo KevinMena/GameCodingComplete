@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);
 
-  int big_count = 100000;
+  int big_count = 1000000;
 
   class_test test(1);
   std::vector<int> vec;
