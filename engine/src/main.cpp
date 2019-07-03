@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <vector>
 
 #include "test/class_test.hpp"
 #include "utils/stopwatch.hpp"
@@ -8,22 +9,30 @@ int main(int argc, char **argv) {
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);
 
+  int big_count = 100000;
+
   class_test test(1);
+  std::vector<int> vec;
+  //vec.reserve(big_count);
   Stopwatch::Stopwatch watch(argc, true);
 
-  for (int i = 1; i < argc; ++i) {
-    printf("\t%s\n", argv[i]);
+  for (int i = 1; i < big_count; ++i) {
+    vec.push_back(i);
     watch.Lap();
   }
-  watch.Stop();
+  Stopwatch::ns::rep total = watch.Stop();
 
-  auto times = watch.GetLaps<Stopwatch::us>();
+  auto times = watch.GetLaps<Stopwatch::ns>();
+
+  Stopwatch::ns::rep sum = 0;
 
   for (int i = 0; i < times.size(); i++)
   {
-    printf("Lap %d: %lld us\n",i, times[i]);
+    sum += times[i];
   }
   
+  printf("Average Lap %lf ns\n", static_cast<long double>(sum) /  static_cast<long double>(times.size()) );
+  printf("Average Total %lf ns\n", static_cast<long double>(total) /  static_cast<long double>(times.size()) );
 
   test.say_msg("Probando");
 
