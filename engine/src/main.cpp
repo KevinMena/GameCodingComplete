@@ -3,6 +3,7 @@
 
 #include "test/class_test.hpp"
 #include "utils/stopwatch.hpp"
+#include "serialization/serializer.hpp"
 
 int main(int argc, char **argv) {
 
