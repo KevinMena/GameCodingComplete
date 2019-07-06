@@ -22,7 +22,7 @@ public:
   virtual bool GetSize(s_size *size) = 0;
   /* Get Length (amount of chars used) of the compiled internals */
   virtual bool GetLength(s_size *length) = 0;
-  /* Put the compiled internals in a char array*/
+  /* Put the compiled internals in a char array. It should have at least enough space */
   virtual bool GetText(char *text) = 0;
 
   /*
