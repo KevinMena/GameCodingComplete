@@ -18,6 +18,8 @@ public:
   virtual bool Clear() = 0;
   /* Compile internals */
   virtual bool Compile() = 0;
+  /* Compile internals in a Pretty Format*/
+  virtual bool CompilePretty() = 0;
   /* Get Size in bytes of the compiled internals */
   virtual bool GetSize(s_size *size) = 0;
   /* Get Length (amount of chars used) of the compiled internals */
