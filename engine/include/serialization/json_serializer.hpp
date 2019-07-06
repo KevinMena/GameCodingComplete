@@ -14,7 +14,7 @@ namespace Serializer
     class JsonSerializer final : ISerializer
     {
     public:
-        JsonSerializer() = default;
+        JsonSerializer();
         JsonSerializer(JsonSerializer &&) = default;
         /* Copy is not allowed because it doesn't make sense */
         JsonSerializer(const JsonSerializer &) = delete;
@@ -39,25 +39,45 @@ namespace Serializer
         bool GetText(char *text) final;
         
     
+        /*
+        Open an space for a new entry with name and version. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and the
+        entry is appended to the array
+        */
+        virtual bool SetEntry(const char *name, s_size name_length, s_size version) final;
+        /*
+        Gets in the space of an entry and return its version
+        If it is at the same level as an opened array, the name is not used and the
+        array entry is opened
+        */
+        virtual bool OpenEntry(const char *name, s_size *version) const final;
+        /* Close an entry */
+        virtual bool Close() const final;
+
     private:
         /* Current Entry we are looking at. Used as a Stack */
-        mutable std::vector<std::reference_wrapper<rapidjson::Value> > currentEntry;
+        mutable std::vector<std::reference_wrapper<rapidjson::Value> > m_currentEntry;
 
         /* Current Depth we are looking at */
-        mutable s_size currentDepth;
+        mutable s_size m_currentDepth;
         
         /* Current Array Depth. Used as a Stack */
-        mutable std::vector<s_size> currentArray;
+        mutable std::vector<s_size> m_currentArray;
 
         /* Current Iterator of the Current Array we are looking at. Used as a Stack */
-        mutable std::vector<rapidjson::Value::ConstValueIterator> currentArrayIter;
+        mutable std::vector<rapidjson::Value::ConstValueIterator> m_currentArrayIter;
 
         /* Where we compile */
-        rapidjson::StringBuffer buffer;
+        rapidjson::StringBuffer m_buffer;
 
         /* Where we store the JSON structure */
-        rapidjson::Document document;
+        rapidjson::Document m_document;
 
+        /* The name of the version entry */
+        static constexpr char  kVersionEntryName [] = "__VERSION__";
+
+        /* Length of the name of the version entry, excluding null terminator */
+        static constexpr s_size kVersionEntryNameLength = sizeof(kVersionEntryName)-1;
     };
 } // namespace Serializer
 
