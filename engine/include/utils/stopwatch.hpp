@@ -24,7 +24,6 @@ using sec = typename std::chrono::seconds;
 /* Stopwatch to count time based on std::chrono */
 class Stopwatch {
 public:
-
   /* Type of Clock we are using */
   using clock = typename std::chrono::high_resolution_clock;
 
@@ -56,6 +55,9 @@ public:
   inline Stopwatch(laps_pt &&container, bool start = true) noexcept {
     m_laps = std::move_if_noexcept(container);
     m_startTime = clock::time_point::min();
+    if (start) {
+      Start();
+    }
   }
 
   /* Creates a Stopwatch by moving other Stopwatch */
@@ -145,7 +147,8 @@ public:
 
     for (laps_pt::size_type i = 1; i < size; ++i) {
       elapsedLaps.push_back(
-          std::chrono::duration_cast<precision_t>(m_laps[i] - m_laps[i - 1]).count());
+          std::chrono::duration_cast<precision_t>(m_laps[i] - m_laps[i - 1])
+              .count());
     }
 
     return elapsedLaps;
@@ -173,7 +176,8 @@ public:
 
     for (laps_pt::size_type i = 1; i < size; ++i) {
       elapsedLaps[i - 1] =
-          std::chrono::duration_cast<precision_t>(m_laps[i] - m_laps[i - 1]).count();
+          std::chrono::duration_cast<precision_t>(m_laps[i] - m_laps[i - 1])
+              .count();
     }
 
     return true;
