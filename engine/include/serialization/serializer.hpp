@@ -32,7 +32,7 @@ public:
   If it is at the same level as an opened array, the name is not used and the
   entry is appended to the array
   */
-  virtual bool SenEntry(const char *name, s_size version) = 0;
+  virtual bool SetEntry(const char *name, s_size version) = 0;
   /*
   Gets in the space of an entry and return its version
   If it is at the same level as an opened array, the name is not used and the
