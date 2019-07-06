@@ -17,6 +17,10 @@ namespace Serializer
         Clear();
     }
 
+    inline bool JsonSerializer::IsInsideArray() const {
+        return !m_currentArray.empty() && m_currentDepth == m_currentArray.back();
+    }
+
     bool JsonSerializer::ParseText(const char *text) {
         return m_document.Parse(text).HasParseError();
     }
@@ -70,7 +74,7 @@ namespace Serializer
         object.AddMember(key.Move(), val.Move(), allocator);
         
         // We are inside an array
-        if (!m_currentArray.empty() && m_currentDepth == m_currentArray.back())
+        if (IsInsideArray())
         {
             rapidjson::Value& current = m_currentEntry.back().get();
             current.PushBack(object.Move(), allocator);
@@ -81,7 +85,11 @@ namespace Serializer
         // We are in a normal entry
         else 
         {
-            rapidjson::Value nameKey(name, name_length, allocator); // copy string name
+            rapidjson::Value nameKey(
+                name, 
+                static_cast<rapidjson::SizeType>(name_length), 
+                allocator
+            ); // copy string name
 
             rapidjson::Value& current = m_currentEntry.back().get();
 
@@ -92,6 +100,40 @@ namespace Serializer
         }
 
         ++m_currentDepth;
+        return true;
+    }
+
+    bool JsonSerializer::OpenEntry(const char *name, s_size *version) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& new_current = *m_currentArrayIter.back();
+
+            *version = new_current[kVersionEntryName].Get<s_size>();
+
+            m_currentEntry.push_back(new_current);
+        }
+        // We are in a normal entry
+        else 
+        {
+
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value& new_current = current[name];
+
+            *version = new_current[kVersionEntryName].Get<s_size>();
+
+            m_currentEntry.push_back(new_current);
+        }
+
+        ++m_currentDepth;
+        return true;
+    }
+
+    bool JsonSerializer::Close() const {
+        m_currentEntry.pop_back();
+
+        --m_currentDepth;
         return true;
     }
 }

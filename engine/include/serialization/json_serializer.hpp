@@ -44,17 +44,21 @@ namespace Serializer
         If it is at the same level as an opened array, the name is not used and the
         entry is appended to the array
         */
-        virtual bool SetEntry(const char *name, s_size name_length, s_size version) final;
+        bool SetEntry(const char *name, s_size name_length, s_size version) final;
         /*
         Gets in the space of an entry and return its version
         If it is at the same level as an opened array, the name is not used and the
         array entry is opened
         */
-        virtual bool OpenEntry(const char *name, s_size *version) const final;
+        bool OpenEntry(const char *name, s_size *version) const final;
         /* Close an entry */
-        virtual bool Close() const final;
+        bool Close() const final;
 
     private:
+
+        /* Check if we are currently inside an array */
+        bool IsInsideArray() const;
+
         /* Current Entry we are looking at. Used as a Stack */
         mutable std::vector<std::reference_wrapper<rapidjson::Value> > m_currentEntry;
 
@@ -65,7 +69,7 @@ namespace Serializer
         mutable std::vector<s_size> m_currentArray;
 
         /* Current Iterator of the Current Array we are looking at. Used as a Stack */
-        mutable std::vector<rapidjson::Value::ConstValueIterator> m_currentArrayIter;
+        mutable std::vector<rapidjson::Value::ValueIterator> m_currentArrayIter;
 
         /* Where we compile */
         rapidjson::StringBuffer m_buffer;
