@@ -109,7 +109,14 @@ namespace Serializer
         {
             rapidjson::Value& new_current = *m_currentArrayIter.back();
 
-            *version = new_current[kVersionEntryName].Get<s_size>();
+            rapidjson::Value::MemberIterator iter = new_current.FindMember(kVersionEntryName);
+
+            if (iter == new_current.MemberEnd())
+            {
+                return false;
+            }
+
+            *version = iter->value.Get<s_size>();
 
             m_currentEntry.push_back(new_current);
         }
@@ -119,9 +126,23 @@ namespace Serializer
 
             rapidjson::Value& current = m_currentEntry.back().get();
 
-            rapidjson::Value& new_current = current[name];
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
 
-            *version = new_current[kVersionEntryName].Get<s_size>();
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            rapidjson::Value& new_current = iter->value;
+
+            iter = new_current.FindMember(kVersionEntryName);
+
+            if (iter == new_current.MemberEnd())
+            {
+                return false;
+            }
+
+            *version = iter->value.Get<s_size>();
 
             m_currentEntry.push_back(new_current);
         }
@@ -134,6 +155,82 @@ namespace Serializer
         m_currentEntry.pop_back();
 
         --m_currentDepth;
+        return true;
+    }
+
+    bool JsonSerializer::SetBool(const char *name, s_size name_length, bool value) {
+        rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
+        rapidjson::Value val(value); 
+
+        rapidjson::Value& current = m_currentEntry.back().get();
+        
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            current.PushBack(val.Move(), allocator);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value nameKey(
+                name, 
+                static_cast<rapidjson::SizeType>(name_length), 
+                allocator
+            ); // copy string name
+
+            current.AddMember(nameKey.Move(), val.Move(), allocator);
+        }
+
+        return true;
+    }
+
+    bool JsonSerializer::IsBool(const char *name) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            return current.IsBool();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            return iter->value.IsBool();
+        }
+    }
+
+    bool JsonSerializer::GetBool(const char *name, bool *result) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            *result = current.Get<bool>();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            *result = iter->value.Get<bool>();
+        }
+
         return true;
     }
 }

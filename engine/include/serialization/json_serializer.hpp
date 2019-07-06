@@ -54,6 +54,25 @@ namespace Serializer
         /* Close an entry */
         bool Close() const final;
 
+        /*
+        Sets a new bool. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetBool(const char *name, s_size name_length, bool value) final;
+        /*
+        Gets if the current/named entry is a bool
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsBool(const char *name) const final;
+        /*
+        Gets the named or current bool entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetBool(const char *name, bool *result) const final;
+
     private:
 
         /* Check if we are currently inside an array */
