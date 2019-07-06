@@ -223,6 +223,9 @@ public:
   virtual bool MoveArray() const = 0;
   /* Close an array entry */
   virtual bool CloseArray() const = 0;
+
+  /* Virtual Destructor */
+  virtual ~ISerializer() = default;
 };
 
 } // namespace Serializer
