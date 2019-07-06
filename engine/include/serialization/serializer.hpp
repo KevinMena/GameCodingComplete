@@ -177,7 +177,7 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   gets the current opened entry is
   */
-  virtual bool GetString(const char *name, const char **value);
+  virtual bool GetString(const char *name, const char **value) = 0;
 
   /*
   Sets a new null entry
