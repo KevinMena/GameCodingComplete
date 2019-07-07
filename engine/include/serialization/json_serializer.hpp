@@ -199,6 +199,19 @@ namespace Serializer
         */
         bool GetString(const char *name, char *result) const final;
 
+        /*
+        Sets a new null entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetNull(const char *name, s_size name_length) final;
+        /*
+        Gets if the current/named entry is null
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsNull(const char *name) const final;
+
     private:
 
         /* Check if we are currently inside an array */
@@ -239,6 +252,9 @@ namespace Serializer
 
         /* Length of the name of the version entry, excluding null terminator */
         static constexpr s_size kVersionEntryNameLength = sizeof(kVersionEntryName)-1;
+
+        /* Character type used */
+        using CharType = typename rapidjson::Document::Ch; 
     };
 
     template<typename T>
@@ -392,8 +408,8 @@ namespace Serializer
         return GetType<double>(name, result);
     }
 
-    bool JsonSerializer::IsString(const char *name) const {
-        return IsType<const typename rapidjson::Document::Ch*>(name);
+    inline bool JsonSerializer::IsString(const char *name) const {
+        return IsType<const typename CharType*>(name);
     }
 
 } // namespace Serializer

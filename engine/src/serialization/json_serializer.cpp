@@ -214,7 +214,7 @@ namespace Serializer
         bool res = GetStringLength(name, result);
         if (res)
         {
-            *result *= sizeof(rapidjson::Document::Ch);
+            *result *= sizeof(CharType);
         }
         return res;
     }
@@ -242,10 +242,60 @@ namespace Serializer
             std::memcpy(
                 result, 
                 iter->value.GetString(), 
-                static_cast<size_t>(iter->value.GetStringLength()) * sizeof(rapidjson::Document::Ch)
+                static_cast<size_t>(iter->value.GetStringLength()) * sizeof(CharType)
             );
         }
 
         return true;
+    }
+
+    bool JsonSerializer::SetNull(const char *name, s_size name_length) {
+        rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
+        rapidjson::Value val; 
+
+        rapidjson::Value& current = m_currentEntry.back().get();
+        
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            current.PushBack(val.Move(), allocator);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value nameKey(
+                name, 
+                static_cast<rapidjson::SizeType>(name_length), 
+                allocator
+            ); // copy string name
+
+            current.AddMember(nameKey.Move(), val.Move(), allocator);
+        }
+
+        return true;
+    }
+
+    bool JsonSerializer::IsNull(const char *name) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            return current.IsNull();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            return iter->value.IsNull();
+        }
     }
 }
