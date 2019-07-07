@@ -209,7 +209,7 @@ public:
   /*
   Reserve Array memory, might be hard to predict due to recursions
   */
-  virtual bool ReserveArray(s_size size) = 0;
+  virtual bool ReserveArray(const char *name, s_size size) = 0;
   /*
   Gets if the current/named entry is an array
   If it is at the same level as an opened array, the name is not used and it
@@ -222,8 +222,8 @@ public:
   array entry is opened
   */
   virtual bool OpenArray(const char *name) const = 0;
-  /* Get Current Array Capacity */
-  virtual bool GetArrayCapacity(s_size *size) const = 0;
+  /* Get Current/Named Array Capacity */
+  virtual bool GetArrayCapacity(const char *name, s_size *size) const = 0;
   /* Moves the Current Array Iterator. It starts at begin(). This function will
    * return false when it hits end() */
   virtual bool MoveArray() const = 0;
