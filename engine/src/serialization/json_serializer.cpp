@@ -26,7 +26,7 @@ namespace Serializer
     }
 
     bool JsonSerializer::Clear() {
-        m_document.Clear();
+        m_document.Swap(rapidjson::Value(rapidjson::kObjectType).Move());
         m_currentEntry.clear();
         m_currentDepth = 0;
         m_currentArray.clear();
