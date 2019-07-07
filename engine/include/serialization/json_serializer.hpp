@@ -212,6 +212,36 @@ namespace Serializer
         */
         bool IsNull(const char *name) const final;
 
+        /*
+        Sets a new array entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetArray(const char *name, s_size name_length) final;
+        /*
+        Reserve Array memory, might be hard to predict due to recursions
+        */
+        bool ReserveArray(const char *name, s_size size) final;
+        /*
+        Gets if the current/named entry is an array
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsArray(const char *name) const final;
+        /*
+        Gets in the space of an entry
+        If it is at the same level as an opened array, the name is not used and the
+        array entry is opened
+        */
+        bool OpenArray(const char *name) const final;
+        /* Get Current/Named Array Capacity */
+        bool GetArrayCapacity(const char *name, s_size *size) const final;
+        /* Moves the Current Array Iterator. It starts at begin(). This function will
+        * return false when it hits end() */
+        bool MoveArray() const final;
+        /* Close an array entry */
+        bool CloseArray() const final;
+
     private:
 
         /* Check if we are currently inside an array */

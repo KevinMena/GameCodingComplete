@@ -298,4 +298,196 @@ namespace Serializer
             return iter->value.IsNull();
         }
     }
+
+    bool JsonSerializer::SetArray(const char *name, s_size name_length) {
+        rapidjson::Value object(rapidjson::kArrayType);
+        rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
+        
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+            current.PushBack(object.Move(), allocator);
+
+            // This is dumb but the library doesn't support other way
+            rapidjson::Value& new_current = current[current.Size()-1];
+
+            m_currentArrayIter.push_back(new_current.Begin());
+
+            m_currentEntry.push_back(new_current);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value nameKey(
+                name, 
+                static_cast<rapidjson::SizeType>(name_length), 
+                allocator
+            ); // copy string name
+
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            current.AddMember(nameKey.Move(), object.Move(), allocator);
+
+            // This is dumb but the library doesn't support other way
+            rapidjson::Value& new_current = current[name];
+
+            m_currentArrayIter.push_back(new_current.Begin());
+
+            m_currentEntry.push_back(new_current);
+
+        }
+
+        ++m_currentDepth;
+        m_currentArray.push_back(m_currentDepth);
+        return true;
+    }
+
+    bool JsonSerializer::ReserveArray(const char *name, s_size size) {
+        rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
+
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            current.Reserve(static_cast<rapidjson::SizeType>(size), allocator);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            iter->value.Reserve(static_cast<rapidjson::SizeType>(size), allocator);
+        }
+
+        return true;
+    }
+
+    bool JsonSerializer::IsArray(const char *name) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            return current.IsArray();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            return iter->value.IsArray();
+        }
+    }
+
+    bool JsonSerializer::OpenArray(const char *name) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::ValueIterator new_current = current.Begin();
+
+            m_currentArrayIter.push_back(new_current);
+
+            m_currentEntry.push_back(*new_current);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            rapidjson::Value::ValueIterator new_current = current.Begin();
+
+            m_currentArrayIter.push_back(new_current);
+
+            m_currentEntry.push_back(*new_current);
+
+        }
+
+        ++m_currentDepth;
+        m_currentArray.push_back(m_currentDepth);
+        return true;
+    }
+
+    bool JsonSerializer::GetArrayCapacity(const char *name, s_size *size) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            *size = current.Capacity();
+
+            return true;
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            *size = iter->value.Capacity();
+
+            return true;
+        }
+    }
+
+    bool JsonSerializer::MoveArray() const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value::ValueIterator current = m_currentArrayIter.back();
+
+            ++current;
+
+            // We are the last position
+            if (m_currentEntry.back().get().End() == current)
+            {
+                return false;
+            }
+            
+            m_currentArrayIter.pop_back();
+            m_currentArrayIter.push_back(current);
+
+            return true;
+        }
+        return false;
+    }
+
+    bool JsonSerializer::CloseArray() const {
+        m_currentEntry.pop_back();
+        m_currentArrayIter.pop_back();
+        m_currentArray.pop_back();
+
+        --m_currentDepth;
+        return true;
+    }
 }
