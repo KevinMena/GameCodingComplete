@@ -73,10 +73,41 @@ namespace Serializer
         */
         bool GetBool(const char *name, bool *result) const final;
 
+        /*
+        Sets a new unsigned entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetUint(const char *name, s_size name_length, unsigned value) final;
+        /*
+        Gets if the current/named entry is an unsigned
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsUint(const char *name) const final;
+        /*
+        Gets the named or current unsigned entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetUint(const char *name, unsigned *result) const final;
+
     private:
 
         /* Check if we are currently inside an array */
         bool IsInsideArray() const;
+
+        /* Sets an entry of type T (Only primitives and no pointers)*/
+        template<typename T>
+        bool SetType(const char *name, s_size name_length, T value);
+
+        /* If an entry is of type T (Only primitives and no pointers)*/
+        template<typename T>
+        bool IsType(const char *name) const;
+
+        /* Get an entry of type T (Only primitives and no pointers)*/
+        template<typename T>
+        bool GetType(const char *name, T *result) const;
 
         /* Current Entry we are looking at. Used as a Stack */
         mutable std::vector<std::reference_wrapper<rapidjson::Value> > m_currentEntry;
@@ -102,6 +133,110 @@ namespace Serializer
         /* Length of the name of the version entry, excluding null terminator */
         static constexpr s_size kVersionEntryNameLength = sizeof(kVersionEntryName)-1;
     };
+
+    template<typename T>
+    bool JsonSerializer::SetType(const char *name, s_size name_length, T value) {
+        rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
+        rapidjson::Value val(value); 
+
+        rapidjson::Value& current = m_currentEntry.back().get();
+        
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            current.PushBack(val.Move(), allocator);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value nameKey(
+                name, 
+                static_cast<rapidjson::SizeType>(name_length), 
+                allocator
+            ); // copy string name
+
+            current.AddMember(nameKey.Move(), val.Move(), allocator);
+        }
+
+        return true;
+    }
+
+    template<typename T>
+    bool JsonSerializer::IsType(const char *name) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            return current.Is<T>();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            return iter->value.Is<T>();
+        }
+    }
+
+    template<typename T>
+    bool JsonSerializer::GetType(const char *name, T *result) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            *result = current.Get<T>();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            *result = iter->value.Get<T>();
+        }
+
+        return true;
+    }
+
+    inline bool JsonSerializer::SetBool(const char *name, s_size name_length, bool value) {
+        return SetType<bool>(name, name_length, value);
+    }
+
+    inline bool JsonSerializer::IsBool(const char *name) const {
+        return IsType<bool>(name);
+    }
+
+    inline bool JsonSerializer::GetBool(const char *name, bool *result) const {
+        return GetType<bool>(name, result);
+    }
+
+    inline bool JsonSerializer::SetUint(const char *name, s_size name_length, unsigned value) {
+        return SetType<unsigned>(name, name_length, value);
+    }
+
+    inline bool JsonSerializer::IsUint(const char *name) const {
+        return IsType<unsigned>(name);
+    }
+    
+    inline bool JsonSerializer::GetUint(const char *name, unsigned *result) const {
+        return GetType<unsigned>(name, result);
+    }
+
 } // namespace Serializer
 
 
