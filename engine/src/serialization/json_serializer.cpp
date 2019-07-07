@@ -151,7 +151,7 @@ namespace Serializer
         return true;
     }
 
-    bool JsonSerializer::Close() const {
+    bool JsonSerializer::CloseEntry() const {
         m_currentEntry.pop_back();
 
         --m_currentDepth;

@@ -52,7 +52,7 @@ namespace Serializer
         */
         bool OpenEntry(const char *name, s_size *version) const final;
         /* Close an entry */
-        bool Close() const final;
+        bool CloseEntry() const final;
 
         /*
         Sets a new bool. Length excludes null terminator.

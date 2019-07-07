@@ -40,7 +40,7 @@ public:
   */
   virtual bool OpenEntry(const char *name, s_size *version) const = 0;
   /* Close an entry */
-  virtual bool Close() const = 0;
+  virtual bool CloseEntry() const = 0;
 
   /*
   Sets a new bool. Length excludes null terminator.

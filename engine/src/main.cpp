@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
   ser.CloseArray();
 
-  ser.Close();
+  ser.CloseEntry();
 
   ser.CompilePretty();
 
