@@ -230,7 +230,11 @@ namespace Serializer
                 return false;
             }
 
-            std::memcpy(result, iter->value.GetString(), static_cast<size_t>(iter->value.GetStringLength()));
+            std::memcpy(
+                result, 
+                iter->value.GetString(), 
+                static_cast<size_t>(iter->value.GetStringLength()) * sizeof(rapidjson::Document::Ch)
+            );
         }
 
         return true;
