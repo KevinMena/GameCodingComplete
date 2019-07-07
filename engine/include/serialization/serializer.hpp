@@ -173,7 +173,7 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   gets the current opened entry is
   */
-  virtual bool GetStringLength(const char *name, s_size *size) const = 0;
+  virtual bool GetStringLength(const char *name, s_size *result) const = 0;
   /*
   Gets the named or current string entry
   If it is at the same level as an opened array, the name is not used and it
