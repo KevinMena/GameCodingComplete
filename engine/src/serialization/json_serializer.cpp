@@ -158,4 +158,81 @@ namespace Serializer
         return true;
     }
 
+    bool JsonSerializer::SetString(const char *name, s_size name_length, const char *value, s_size length) {
+        rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
+        rapidjson::Value val(value, static_cast<rapidjson::SizeType>(length), allocator); 
+
+        rapidjson::Value& current = m_currentEntry.back().get();
+        
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            current.PushBack(val.Move(), allocator);
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value nameKey(
+                name, 
+                static_cast<rapidjson::SizeType>(name_length), 
+                allocator
+            ); // copy string name
+
+            current.AddMember(nameKey.Move(), val.Move(), allocator);
+        }
+
+        return true;
+    }
+
+    bool JsonSerializer::GetStringLength(const char *name, s_size *result) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            *result = current.GetStringLength();
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            *result = iter->value.GetStringLength();
+        }
+
+        return true;
+    }
+
+    bool JsonSerializer::GetString(const char *name, char *result) const {
+        // We are inside an array
+        if (IsInsideArray())
+        {
+            rapidjson::Value& current = *m_currentArrayIter.back();
+
+            std::memcpy(result, current.GetString(), static_cast<size_t>(current.GetStringLength()));
+        }
+        // We are in a normal entry
+        else 
+        {
+            rapidjson::Value& current = m_currentEntry.back().get();
+
+            rapidjson::Value::MemberIterator iter = current.FindMember(name);
+
+            if (iter == current.MemberEnd())
+            {
+                return false;
+            }
+
+            std::memcpy(result, iter->value.GetString(), static_cast<size_t>(iter->value.GetStringLength()));
+        }
+
+        return true;
+    }
 }

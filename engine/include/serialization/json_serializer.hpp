@@ -185,13 +185,13 @@ namespace Serializer
         If it is at the same level as an opened array, the name is not used and it
         gets the current opened entry is
         */
-        bool GetStringLength(const char *name, s_size *size) const final;
+        bool GetStringLength(const char *name, s_size *result) const final;
         /*
-        Gets the named or current string entry
+        Gets the named or current string entry. The result pointer must be able to hold the string
         If it is at the same level as an opened array, the name is not used and it
         gets the current opened entry is
         */
-        bool GetString(const char *name, const char **value) final;
+        bool GetString(const char *name, char *result) const final;
 
     private:
 
@@ -384,6 +384,10 @@ namespace Serializer
     
     inline bool JsonSerializer::GetDouble(const char *name, double *result) const {
         return GetType<double>(name, result);
+    }
+
+    bool JsonSerializer::IsString(const char *name) const {
+        return IsType<const typename rapidjson::Document::Ch*>(name);
     }
 
 } // namespace Serializer
