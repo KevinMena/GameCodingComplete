@@ -92,6 +92,107 @@ namespace Serializer
         */
         bool GetUint(const char *name, unsigned *result) const final;
 
+        /*
+        Sets a new int entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetInt(const char *name, s_size name_length, int value) final;
+        /*
+        Gets if the current/named entry is an int
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsInt(const char *name) const final;
+        /*
+        Gets the named or current int entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetInt(const char *name, int *result) const final;
+
+        /*
+        Sets a new uint64_t entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetUint64(const char *name, s_size name_length, uint64_t value) final;
+        /*
+        Gets if the current/named entry is an uint64_t
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsUint64(const char *name) const final;
+        /*
+        Gets the named or current uint64_t entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetUint64(const char *name, uint64_t *result) const final;
+
+        /*
+        Sets a new int64_t entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetInt64(const char *name, s_size name_length, int64_t value) final;
+        /*
+        Gets if the current/named entry is an int64_t
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsInt64(const char *name) const final;
+        /*
+        Gets the named or current int64_t entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetInt64(const char *name, int64_t *result) const final;
+
+        /*
+        Sets a new double entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetDouble(const char *name, s_size name_length, double value) final;
+        /*
+        Gets if the current/named entry is an double
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsDouble(const char *name) const final;
+        /*
+        Gets the named or current double entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetDouble(const char *name, double *result) const final;
+
+        /*
+        Sets a new string entry. Length excludes null terminator.
+        If it is at the same level as an opened array, the name is not used and it
+        is appended to the array
+        */
+        bool SetString(const char *name, s_size name_length, const char *value, s_size length) final;
+        /*
+        Gets if the current/named entry is a string
+        If it is at the same level as an opened array, the name is not used and it
+        checks if the current opened entry is
+        */
+        bool IsString(const char *name) const final;
+        /*
+        Gets the named or current string entry length
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetStringLength(const char *name, s_size *size) const final;
+        /*
+        Gets the named or current string entry
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetString(const char *name, const char **value) final;
+
     private:
 
         /* Check if we are currently inside an array */
@@ -235,6 +336,54 @@ namespace Serializer
     
     inline bool JsonSerializer::GetUint(const char *name, unsigned *result) const {
         return GetType<unsigned>(name, result);
+    }
+
+    inline bool JsonSerializer::SetInt(const char *name, s_size name_length, int value) {
+        return SetType<int>(name, name_length, value);
+    }
+
+    inline bool JsonSerializer::IsInt(const char *name) const {
+        return IsType<int>(name);
+    }
+    
+    inline bool JsonSerializer::GetInt(const char *name, int *result) const {
+        return GetType<int>(name, result);
+    }
+
+    inline bool JsonSerializer::SetUint64(const char *name, s_size name_length, uint64_t value) {
+        return SetType<uint64_t>(name, name_length, value);
+    }
+
+    inline bool JsonSerializer::IsUint64(const char *name) const {
+        return IsType<uint64_t>(name);
+    }
+    
+    inline bool JsonSerializer::GetUint64(const char *name, uint64_t *result) const {
+        return GetType<uint64_t>(name, result);
+    }
+
+    inline bool JsonSerializer::SetInt64(const char *name, s_size name_length, int64_t value) {
+        return SetType<int64_t>(name, name_length, value);
+    }
+
+    inline bool JsonSerializer::IsInt64(const char *name) const {
+        return IsType<int64_t>(name);
+    }
+    
+    inline bool JsonSerializer::GetInt64(const char *name, int64_t *result) const {
+        return GetType<int64_t>(name, result);
+    }
+
+    inline bool JsonSerializer::SetDouble(const char *name, s_size name_length, double value) {
+        return SetType<double>(name, name_length, value);
+    }
+
+    inline bool JsonSerializer::IsDouble(const char *name) const {
+        return IsType<double>(name);
+    }
+    
+    inline bool JsonSerializer::GetDouble(const char *name, double *result) const {
+        return GetType<double>(name, result);
     }
 
 } // namespace Serializer
