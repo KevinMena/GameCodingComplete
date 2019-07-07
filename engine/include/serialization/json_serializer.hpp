@@ -181,11 +181,17 @@ namespace Serializer
         */
         bool IsString(const char *name) const final;
         /*
-        Gets the named or current string entry length
+        Gets the named or current string entry length (UTF makes this tricky)
         If it is at the same level as an opened array, the name is not used and it
         gets the current opened entry is
         */
         bool GetStringLength(const char *name, s_size *result) const final;
+        /*
+        Gets the named or current string size in bytes
+        If it is at the same level as an opened array, the name is not used and it
+        gets the current opened entry is
+        */
+        bool GetStringSize(const char *name, s_size *result) const final;
         /*
         Gets the named or current string entry. The result pointer must be able to hold the string
         If it is at the same level as an opened array, the name is not used and it

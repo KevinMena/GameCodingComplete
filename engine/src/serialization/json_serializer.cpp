@@ -210,6 +210,15 @@ namespace Serializer
         return true;
     }
 
+    bool JsonSerializer::GetStringSize(const char *name, s_size *result) const {
+        bool res = GetStringLength(name, result);
+        if (res)
+        {
+            *result *= sizeof(rapidjson::Document::Ch);
+        }
+        return res;
+    }
+
     bool JsonSerializer::GetString(const char *name, char *result) const {
         // We are inside an array
         if (IsInsideArray())
