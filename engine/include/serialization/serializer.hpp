@@ -175,11 +175,11 @@ public:
   */
   virtual bool GetStringLength(const char *name, s_size *result) const = 0;
   /*
-  Gets the named or current string entry
+  Gets the named or current string entry. The result pointer must be able to hold the string
   If it is at the same level as an opened array, the name is not used and it
   gets the current opened entry is
   */
-  virtual bool GetString(const char *name, const char **value) const = 0;
+  virtual bool GetString(const char *name, char *result) const = 0;
 
   /*
   Sets a new null entry. Length excludes null terminator.
