@@ -17,10 +17,6 @@ namespace Serializer
         Clear();
     }
 
-    inline bool JsonSerializer::IsInsideArray() const {
-        return !m_currentArray.empty() && m_currentDepth == m_currentArray.back();
-    }
-
     bool JsonSerializer::ParseText(const char *text) {
         return m_document.Parse(text).HasParseError();
     }

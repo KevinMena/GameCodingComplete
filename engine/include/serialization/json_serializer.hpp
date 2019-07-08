@@ -287,6 +287,10 @@ namespace Serializer
         using CharType = typename rapidjson::Document::Ch; 
     };
 
+    inline bool JsonSerializer::IsInsideArray() const {
+        return !m_currentArray.empty() && m_currentDepth == m_currentArray.back();
+    }
+
     template<typename T>
     bool JsonSerializer::SetType(const char *name, s_size name_length, T value) {
         rapidjson::Document::AllocatorType& allocator = m_document.GetAllocator();
