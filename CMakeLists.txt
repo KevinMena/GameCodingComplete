@@ -34,6 +34,7 @@ set(INSTALL_DIRECTORY ${CMAKE_BINARY_DIR}/${ENGINE_SOURCE_FOLDER})
 set(EXTERNAL_DOWNLOAD_LOCATION ${CMAKE_BINARY_DIR}/external)
 
 project(kch_engine)
+include(CTest)
 
 # C++ Configuration
 set(CMAKE_CXX_STANDARD 17)
@@ -79,7 +80,90 @@ ExternalProject_Add_Step(
     DEPENDEES download
 )
 
+# Testing
+
+if(${BUILD_TESTING})
+    set(KCH_ENGINE_FOR_TEST_SRC  ${KCH_ENGINE_SRC})
+    # https://stackoverflow.com/questions/15550777/how-do-i-exclude-a-single-file-from-a-cmake-fileglob-pattern
+    # DO NOT CHANGE NAME OF MAIN
+    list(FILTER KCH_ENGINE_FOR_TEST_SRC EXCLUDE REGEX ".*/main.cpp$")
+
+    # Engine Test Source Files
+    file(GLOB_RECURSE KCH_ENGINE_TEST_SRC
+        "${ENGINE_SOURCE_FOLDER}/test_src/*.c"
+        "${ENGINE_SOURCE_FOLDER}/test_src/*.cpp"
+        "${ENGINE_SOURCE_FOLDER}/test_src/*.cxx"
+    )
+
+    set(EXTERNAL_TEST_DOWNLOAD_LOCATION ${CMAKE_BINARY_DIR}/test_external)
+    set(TESTS_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+    set(TESTS_RUNTIME_OUTPUT_DIRECTORY ${TESTS_DIRECTORY}/bin)
+    set(TESTS_ARCHIVE_OUTPUT_DIRECTORY ${TESTS_DIRECTORY}/lib/static)
+    set(TESTS_LIBRARY_OUTPUT_DIRECTORY ${TESTS_DIRECTORY}/lib)
+
+    # Download and unpack googletest at configure time
+    # https://github.com/google/googletest/blob/master/googletest/README.md#using-cmake
+    set(GTEST_DOWNLOAD_FOLDER ${EXTERNAL_TEST_DOWNLOAD_LOCATION}/googletest-download)
+
+    configure_file(gtest_config/CMakeLists.txt.in ${GTEST_DOWNLOAD_FOLDER}/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${GTEST_DOWNLOAD_FOLDER} )
+    if(result)
+        message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${GTEST_DOWNLOAD_FOLDER})
+    if(result)
+        message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
+
+    # Prevent overriding the parent project's compiler/linker
+    # settings on Windows
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    # Add googletest directly to our build. This defines
+    # the gtest and gtest_main targets.
+    add_subdirectory(${EXTERNAL_TEST_DOWNLOAD_LOCATION}/googletest-src
+                    ${EXTERNAL_TEST_DOWNLOAD_LOCATION}/googletest-build
+                    EXCLUDE_FROM_ALL)
+
+    # The gtest/gtest_main targets carry header search path
+    # dependencies automatically when using CMake 2.8.11 or
+    # later. Otherwise we have to add them here ourselves.
+    if (CMAKE_VERSION VERSION_LESS 2.8.11)
+        include_directories("${gtest_SOURCE_DIR}/include")
+    endif()
+
+    set_target_properties(gmock_main PROPERTIES PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gmock_main PROPERTIES COMPILE_PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gmock_main PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gmock_main PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${TESTS_ARCHIVE_OUTPUT_DIRECTORY})
+    set_target_properties(gmock_main PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TESTS_LIBRARY_OUTPUT_DIRECTORY})
+
+    set_target_properties(gmock PROPERTIES PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gmock PROPERTIES COMPILE_PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gmock PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gmock PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${TESTS_ARCHIVE_OUTPUT_DIRECTORY})
+    set_target_properties(gmock PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TESTS_LIBRARY_OUTPUT_DIRECTORY})
+
+    set_target_properties(gtest_main PROPERTIES PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gtest_main PROPERTIES COMPILE_PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gtest_main PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gtest_main PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${TESTS_ARCHIVE_OUTPUT_DIRECTORY})
+    set_target_properties(gtest_main PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TESTS_LIBRARY_OUTPUT_DIRECTORY})
+
+    set_target_properties(gtest PROPERTIES PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gtest PROPERTIES COMPILE_PDB_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gtest PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})
+    set_target_properties(gtest PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${TESTS_ARCHIVE_OUTPUT_DIRECTORY})
+    set_target_properties(gtest PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TESTS_LIBRARY_OUTPUT_DIRECTORY})
+    
+endif()
+
 # Targets
+# https://www.jetbrains.com/help/clion/quick-cmake-tutorial.html
 add_executable(kch_engine ${KCH_ENGINE_SRC})
 
 # Set Warnings
@@ -88,6 +172,24 @@ add_executable(kch_engine ${KCH_ENGINE_SRC})
 target_compile_options(kch_engine PRIVATE
                            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic -Werror>
                            $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>)
+
+
+if(${BUILD_TESTING})
+    add_executable(kch_engine_test ${KCH_ENGINE_TEST_SRC} ${KCH_ENGINE_FOR_TEST_SRC})
+
+    set_target_properties(kch_engine_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_RUNTIME_OUTPUT_DIRECTORY})    
+
+    target_compile_options(kch_engine_test PRIVATE
+                           $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic -Werror>
+                           $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>)
+
+    add_dependencies(kch_engine_test kch_engine)
+    target_include_directories(kch_engine_test PUBLIC ${ENGINE_SOURCE_FOLDER}/test_include)
+
+    # https://github.com/google/googletest/blob/master/googlemock/README.md
+    target_link_libraries(kch_engine_test gmock_main)
+
+endif()
 
 include_directories(${ENGINE_SOURCE_FOLDER}/include)
 
