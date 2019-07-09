@@ -11,7 +11,7 @@
 
 namespace Serializer
 {
-    class JsonSerializer final : ISerializer
+    class JsonSerializer final : public ISerializer
     {
     public:
         JsonSerializer();
