@@ -7,11 +7,9 @@
 #include "rapidjson/writer.h"
 #include "serialization/serializer.hpp"
 
-
 #include <cstring>
 #include <functional>
 #include <vector>
-
 
 namespace Serializer {
 JsonSerializer::JsonSerializer() { Clear(); }
@@ -44,8 +42,7 @@ bool JsonSerializer::CompilePretty() {
 }
 
 bool JsonSerializer::GetSize(s_size *size) {
-  *size = static_cast<s_size>(m_buffer.GetSize()) +
-          sizeof(rapidjson::StringBuffer::Ch);
+  *size = static_cast<s_size>(m_buffer.GetSize()) + sizeof(CharType);
   return true;
 }
 
@@ -179,7 +176,7 @@ bool JsonSerializer::GetStringLength(const char *name, s_size *result) const {
   if (IsInsideArray()) {
     rapidjson::Value &current = *m_currentArrayIter.back();
 
-    *result = current.GetStringLength();
+    *result = current.GetStringLength() + 1;
   }
   // We are in a normal entry
   else {
@@ -191,7 +188,7 @@ bool JsonSerializer::GetStringLength(const char *name, s_size *result) const {
       return false;
     }
 
-    *result = iter->value.GetStringLength();
+    *result = iter->value.GetStringLength() + 1;
   }
 
   return true;
@@ -210,8 +207,12 @@ bool JsonSerializer::GetString(const char *name, char *result) const {
   if (IsInsideArray()) {
     rapidjson::Value &current = *m_currentArrayIter.back();
 
-    std::memcpy(result, current.GetString(),
-                static_cast<size_t>(current.GetStringLength()));
+    size_t size =
+        static_cast<size_t>(current.GetStringLength()) * sizeof(CharType);
+
+    std::memcpy(result, current.GetString(), size);
+
+    result[size] = '\0';
   }
   // We are in a normal entry
   else {
@@ -223,9 +224,12 @@ bool JsonSerializer::GetString(const char *name, char *result) const {
       return false;
     }
 
-    std::memcpy(result, iter->value.GetString(),
-                static_cast<size_t>(iter->value.GetStringLength()) *
-                    sizeof(CharType));
+    size_t size =
+        static_cast<size_t>(iter->value.GetStringLength()) * sizeof(CharType);
+
+    std::memcpy(result, iter->value.GetString(), size);
+
+    result[size] = '\0';
   }
 
   return true;
