@@ -45,17 +45,19 @@ namespace Serializer
     }
 
     bool JsonSerializer::GetSize(s_size *size) {
-        *size = static_cast<s_size>(m_buffer.GetSize());
+        *size = static_cast<s_size>(m_buffer.GetSize()) + sizeof(rapidjson::StringBuffer::Ch);
         return true;
     }
 
     bool JsonSerializer::GetLength(s_size *length) {
-        *length = static_cast<s_size>(m_buffer.GetLength());
+        *length = static_cast<s_size>(m_buffer.GetLength()) + 1;
         return true;
     }
 
     bool JsonSerializer::GetText(char *text) {
-        std::memcpy(text, m_buffer.GetString(), static_cast<size_t>(m_buffer.GetSize()));
+        size_t size = static_cast<size_t>(m_buffer.GetSize());
+        std::memcpy(text, m_buffer.GetString(), size);
+        text[size] = '\0';
         return true;
     }
 
