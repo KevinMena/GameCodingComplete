@@ -435,3 +435,86 @@ TYPED_TEST(SerializerTest, doubleType) {
   EXPECT_EQ(hola_res, hola) << test_start_text << "in Compile to be " << hola
                             << " but rather got " << hola_res;
 }
+
+TYPED_TEST(SerializerTest, stringType) {
+  std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
+
+  const std::string hola = "sdfsd fsdfsdf sdfsssss  ssdd sdfssSSS SdfSDFf "
+                           "FFFSF sdSSSSSS,,,,;;;sdfsdf,s,s ,s,s";
+  const std::string hola_name = "hola";
+  std::string test_start_text = "Expected \"" + hola_name + "\" ";
+
+  EXPECT_TRUE(serializer->SetString(hola_name.c_str(), hola_name.length(),
+                                    hola.c_str(), hola.length()))
+      << test_start_text << "to be inserted";
+  EXPECT_TRUE(serializer->IsString(hola_name.c_str()))
+      << test_start_text << "to be an String";
+
+  Serializer::s_size size;
+
+  EXPECT_TRUE(serializer->GetStringLength(hola_name.c_str(), &size))
+      << test_start_text << "String length";
+
+  std::unique_ptr<char[]> hola_res(new char[size]);
+  EXPECT_TRUE(serializer->GetString(hola_name.c_str(), hola_res.get()))
+      << test_start_text << "to be an String";
+  EXPECT_STREQ(hola_res.get(), hola.c_str())
+      << test_start_text << "to be " << hola << " but rather got "
+      << std::string(hola_res.get());
+
+  // Pretty Compile
+  EXPECT_TRUE(serializer->CompilePretty()) << "Failed to Pretty Compile";
+
+  EXPECT_TRUE(serializer->GetSize(&size))
+      << "Failed to Get Size of Pretty Compile";
+
+  std::unique_ptr<char[]> resp(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp.get()))
+      << "Failed to Get Pretty Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerPretty(
+      this->GetSerializer());
+
+  std::string prettyCompile(resp.get());
+
+  EXPECT_TRUE(serializerPretty->ParseText(resp.get()))
+      << "Failed to Parse Pretty Compile\n"
+      << prettyCompile;
+
+  EXPECT_TRUE(serializerPretty->GetStringLength(hola_name.c_str(), &size))
+      << test_start_text << "String length";
+
+  std::unique_ptr<char[]> hola_res2(new char[size]);
+  EXPECT_TRUE(serializerPretty->GetString(hola_name.c_str(), hola_res2.get()))
+      << test_start_text << "to be an String in Pretty Compile";
+  EXPECT_STREQ(hola_res2.get(), hola.c_str())
+      << test_start_text << "in Pretty Compile to be " << hola
+      << " but rather got " << std::string(hola_res2.get());
+
+  // Compile
+  EXPECT_TRUE(serializer->Compile()) << "Failed to Compile";
+
+  EXPECT_TRUE(serializer->GetSize(&size)) << "Failed to Get Size of Compile";
+
+  std::unique_ptr<char[]> resp2(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp2.get())) << "Failed to Get Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerNormal(
+      this->GetSerializer());
+
+  std::string compile(resp2.get());
+
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile" << compile;
+  EXPECT_TRUE(serializerNormal->GetStringLength(hola_name.c_str(), &size))
+      << test_start_text << "String length";
+
+  std::unique_ptr<char[]> hola_res3(new char[size]);
+  EXPECT_TRUE(serializerNormal->GetString(hola_name.c_str(), hola_res3.get()))
+      << test_start_text << "to be an String in Compile";
+  EXPECT_STREQ(hola_res3.get(), hola.c_str())
+      << test_start_text << "in Compile to be " << hola
+      << " but rather got " << std::string(hola_res3.get());
+}
