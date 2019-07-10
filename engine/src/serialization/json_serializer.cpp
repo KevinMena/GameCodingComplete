@@ -307,7 +307,7 @@ bool JsonSerializer::SetArray(const char *name, s_size name_length) {
     // This is dumb but the library doesn't support other way
     rapidjson::Value &new_current = current[name];
 
-    m_currentArrayIter.push_back(new_current.Begin());
+    m_currentArrayIter.push_back(new_current.End());
 
     m_currentEntry.push_back(new_current);
   }
@@ -345,7 +345,7 @@ bool JsonSerializer::ReserveArray(const char *name, s_size size) {
 bool JsonSerializer::IsArray(const char *name) const {
   // We are inside an array
   if (IsInsideArray()) {
-    rapidjson::Value &current = *m_currentArrayIter.back();
+    rapidjson::Value &current = m_currentEntry.back().get();
 
     return current.IsArray();
   }
@@ -384,11 +384,11 @@ bool JsonSerializer::OpenArray(const char *name) const {
       return false;
     }
 
-    rapidjson::Value::ValueIterator new_current = current.Begin();
+    rapidjson::Value::ValueIterator new_current = iter->value.Begin();
 
     m_currentArrayIter.push_back(new_current);
 
-    m_currentEntry.push_back(*new_current);
+    m_currentEntry.push_back(iter->value);
   }
 
   ++m_currentDepth;
@@ -401,7 +401,7 @@ bool JsonSerializer::GetArrayCapacity(const char *name, s_size *size) const {
   if (IsInsideArray()) {
     rapidjson::Value &current = *m_currentArrayIter.back();
 
-    *size = current.Capacity();
+    *size = current.Size();
 
     return true;
   }
@@ -415,7 +415,7 @@ bool JsonSerializer::GetArrayCapacity(const char *name, s_size *size) const {
       return false;
     }
 
-    *size = iter->value.Capacity();
+    *size = iter->value.Size();
 
     return true;
   }
@@ -426,9 +426,14 @@ bool JsonSerializer::MoveArray() const {
   if (IsInsideArray()) {
     rapidjson::Value::ValueIterator current = m_currentArrayIter.back();
 
+    // We are the last position
+    if (m_currentEntry.back().get().End() == current) {
+      return false;
+    }
+
     ++current;
 
-    // We are the last position
+    // We will be at the last position
     if (m_currentEntry.back().get().End() == current) {
       return false;
     }
