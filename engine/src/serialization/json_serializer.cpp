@@ -18,7 +18,7 @@ namespace Serializer
     }
 
     bool JsonSerializer::ParseText(const char *text) {
-        return m_document.Parse(text).HasParseError();
+        return !m_document.Parse(text).HasParseError();
     }
 
     bool JsonSerializer::Clear() {
