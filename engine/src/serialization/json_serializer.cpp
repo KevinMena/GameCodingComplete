@@ -3,6 +3,7 @@
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
+#include "rapidjson/reader.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "serialization/serializer.hpp"
@@ -15,7 +16,8 @@ namespace Serializer {
 JsonSerializer::JsonSerializer() { Clear(); }
 
 bool JsonSerializer::ParseText(const char *text) {
-  return !m_document.Parse(text).HasParseError();
+  return !m_document.Parse<rapidjson::kParseNanAndInfFlag>(text)
+              .HasParseError();
 }
 
 bool JsonSerializer::Clear() {
@@ -31,13 +33,29 @@ bool JsonSerializer::Clear() {
 
 bool JsonSerializer::Compile() {
   m_buffer.Clear();
-  rapidjson::Writer<rapidjson::StringBuffer> writer(m_buffer);
+
+  using Writer = typename rapidjson::Writer<
+      /* typename OutputStream */ rapidjson::StringBuffer,
+      /* typename SourceEncoding */ rapidjson::UTF8<>,
+      /* typename TargetEncoding */ rapidjson::UTF8<>,
+      /* typename Allocator */ rapidjson::CrtAllocator,
+      /* unsigned writeFlags */ rapidjson::kWriteNanAndInfFlag>;
+
+  Writer writer(m_buffer);
   return m_document.Accept(writer);
 }
 
 bool JsonSerializer::CompilePretty() {
   m_buffer.Clear();
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(m_buffer);
+
+  using PrettyWriter = typename rapidjson::PrettyWriter<
+      /* typename OutputStream */ rapidjson::StringBuffer,
+      /* typename SourceEncoding */ rapidjson::UTF8<>,
+      /* typename TargetEncoding */ rapidjson::UTF8<>,
+      /* typename Allocator */ rapidjson::CrtAllocator,
+      /* unsigned writeFlags */ rapidjson::kWriteNanAndInfFlag>;
+
+  PrettyWriter writer(m_buffer);
   return m_document.Accept(writer);
 }
 
