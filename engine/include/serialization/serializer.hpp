@@ -14,6 +14,8 @@ class ISerializer {
 public:
   /* Parse from Text */
   virtual bool ParseText(const char *text) = 0;
+  /* Parse from Text using length*/
+  virtual bool ParseText(const char *text, size_t length) = 0;
   /* Clear internals */
   virtual bool Clear() = 0;
   /* Compile internals */

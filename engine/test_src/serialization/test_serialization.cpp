@@ -61,7 +61,7 @@ TYPED_TEST(SerializerTest, intType) {
 
   hola_res = -1;
 
-  EXPECT_TRUE(serializerPretty->ParseText(resp.get()))
+  EXPECT_TRUE(serializerPretty->ParseText(resp.get(), static_cast<size_t>(size)))
       << "Failed to Parse Pretty Compile\n"
       << prettyCompile;
   EXPECT_TRUE(serializerPretty->GetInt(hola_name.c_str(), &hola_res))

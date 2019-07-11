@@ -13,12 +13,6 @@
 #include <vector>
 
 namespace Serializer {
-JsonSerializer::JsonSerializer() { Clear(); }
-
-bool JsonSerializer::ParseText(const char *text) {
-  return !m_document.Parse<rapidjson::kParseNanAndInfFlag>(text)
-              .HasParseError();
-}
 
 bool JsonSerializer::Clear() {
   m_document.Swap(rapidjson::Value(rapidjson::kObjectType).Move());

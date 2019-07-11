@@ -25,6 +25,8 @@ public:
 
   /* Parse from Text */
   bool ParseText(const char *text) final;
+  /* Parse from Text using length*/
+  bool ParseText(const char *text, size_t length) final;
   /* Clear internals */
   bool Clear() final;
   /* Compile internals */
@@ -285,6 +287,18 @@ private:
   /* Character type used */
   using CharType = typename rapidjson::Document::Ch;
 };
+
+inline JsonSerializer::JsonSerializer() { Clear(); }
+
+inline bool JsonSerializer::ParseText(const char *text) {
+  return !m_document.Parse<rapidjson::kParseNanAndInfFlag>(text)
+              .HasParseError();
+}
+
+inline bool JsonSerializer::ParseText(const char *text, size_t length) {
+  return !m_document.Parse<rapidjson::kParseNanAndInfFlag>(text, length)
+              .HasParseError();
+}
 
 inline bool JsonSerializer::IsInsideArray() const {
   return !m_currentArray.empty() && m_currentDepth == m_currentArray.back();
