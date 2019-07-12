@@ -601,20 +601,24 @@ TYPED_TEST(SerializerTest, intArrayType) {
 
   std::string compile(resp2.get());
 
-  EXPECT_TRUE(serializer->GetArrayCapacity(hola_name.c_str(), &array_size));
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
   ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
-  EXPECT_TRUE(serializer->OpenArray(hola_name.c_str()));
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
   hola_resp.clear();
   for (size_t i = 0; i < array_size; i++) {
-    EXPECT_TRUE(serializer->GetInt(hola_name.c_str(), &hola_res))
+    EXPECT_TRUE(serializerNormal->GetInt(hola_name.c_str(), &hola_res))
         << test_start_text << "to be an int in Pretty Compile";
     hola_resp.push_back(hola_res);
-    EXPECT_TRUE(serializer->MoveArray() || i == array_size - 1);
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
   EXPECT_TRUE(hola == hola_resp) << " Different Arrays in Compile\n"
                                  << prettyCompile;
 
-  EXPECT_TRUE(serializer->CloseArray());
+  EXPECT_TRUE(serializerNormal->CloseArray());
 }
 
 TYPED_TEST(SerializerTest, uintArrayType) {
@@ -694,20 +698,24 @@ TYPED_TEST(SerializerTest, uintArrayType) {
 
   std::string compile(resp2.get());
 
-  EXPECT_TRUE(serializer->GetArrayCapacity(hola_name.c_str(), &array_size));
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
   ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
-  EXPECT_TRUE(serializer->OpenArray(hola_name.c_str()));
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
   hola_resp.clear();
   for (size_t i = 0; i < array_size; i++) {
-    EXPECT_TRUE(serializer->GetUint(hola_name.c_str(), &hola_res))
+    EXPECT_TRUE(serializerNormal->GetUint(hola_name.c_str(), &hola_res))
         << test_start_text << "to be an int in Pretty Compile";
     hola_resp.push_back(hola_res);
-    EXPECT_TRUE(serializer->MoveArray() || i == array_size - 1);
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
   EXPECT_TRUE(hola == hola_resp) << " Different Arrays in Compile\n"
                                  << prettyCompile;
 
-  EXPECT_TRUE(serializer->CloseArray());
+  EXPECT_TRUE(serializerNormal->CloseArray());
 }
 
 TYPED_TEST(SerializerTest, int64ArrayType) {
@@ -788,20 +796,24 @@ TYPED_TEST(SerializerTest, int64ArrayType) {
 
   std::string compile(resp2.get());
 
-  EXPECT_TRUE(serializer->GetArrayCapacity(hola_name.c_str(), &array_size));
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
   ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
-  EXPECT_TRUE(serializer->OpenArray(hola_name.c_str()));
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
   hola_resp.clear();
   for (size_t i = 0; i < array_size; i++) {
-    EXPECT_TRUE(serializer->GetInt64(hola_name.c_str(), &hola_res))
+    EXPECT_TRUE(serializerNormal->GetInt64(hola_name.c_str(), &hola_res))
         << test_start_text << "to be an int in Pretty Compile";
     hola_resp.push_back(hola_res);
-    EXPECT_TRUE(serializer->MoveArray() || i == array_size - 1);
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
   EXPECT_TRUE(hola == hola_resp) << " Different Arrays in Compile\n"
                                  << prettyCompile;
 
-  EXPECT_TRUE(serializer->CloseArray());
+  EXPECT_TRUE(serializerNormal->CloseArray());
 }
 
 TYPED_TEST(SerializerTest, uint64ArrayType) {
@@ -881,20 +893,24 @@ TYPED_TEST(SerializerTest, uint64ArrayType) {
 
   std::string compile(resp2.get());
 
-  EXPECT_TRUE(serializer->GetArrayCapacity(hola_name.c_str(), &array_size));
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
   ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
-  EXPECT_TRUE(serializer->OpenArray(hola_name.c_str()));
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
   hola_resp.clear();
   for (size_t i = 0; i < array_size; i++) {
-    EXPECT_TRUE(serializer->GetUint64(hola_name.c_str(), &hola_res))
+    EXPECT_TRUE(serializerNormal->GetUint64(hola_name.c_str(), &hola_res))
         << test_start_text << "to be an int in Pretty Compile";
     hola_resp.push_back(hola_res);
-    EXPECT_TRUE(serializer->MoveArray() || i == array_size - 1);
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
   EXPECT_TRUE(hola == hola_resp) << " Different Arrays in Compile\n"
                                  << prettyCompile;
 
-  EXPECT_TRUE(serializer->CloseArray());
+  EXPECT_TRUE(serializerNormal->CloseArray());
 }
 
 TYPED_TEST(SerializerTest, doubleArrayType) {
@@ -991,15 +1007,19 @@ TYPED_TEST(SerializerTest, doubleArrayType) {
 
   std::string compile(resp2.get());
 
-  EXPECT_TRUE(serializer->GetArrayCapacity(hola_name.c_str(), &array_size));
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
   ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
-  EXPECT_TRUE(serializer->OpenArray(hola_name.c_str()));
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
   hola_resp.clear();
   for (size_t i = 0; i < array_size; i++) {
-    EXPECT_TRUE(serializer->GetDouble(hola_name.c_str(), &hola_res))
+    EXPECT_TRUE(serializerNormal->GetDouble(hola_name.c_str(), &hola_res))
         << test_start_text << "to be an int in Pretty Compile";
     hola_resp.push_back(hola_res);
-    EXPECT_TRUE(serializer->MoveArray() || i == array_size - 1);
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
 
   for (size_t i = 0; i < hola.size(); i++) {
@@ -1014,7 +1034,7 @@ TYPED_TEST(SerializerTest, doubleArrayType) {
     }
   }
 
-  EXPECT_TRUE(serializer->CloseArray());
+  EXPECT_TRUE(serializerNormal->CloseArray());
 }
 
 TYPED_TEST(SerializerTest, stringArrayType) {
