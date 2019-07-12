@@ -444,7 +444,7 @@ TYPED_TEST(SerializerTest, stringType) {
   std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
 
   const std::string hola = "sdfsd fsdfsdf sdfsssss  ssdd sdfssSSS SdfSDFf "
-                           "FFFSF sdSSSSSS,,,,;;;sdfsdf,s,s ,s,s";
+                           "FFFSF sdSSSSSS,,,,;;;\"sdfsdf\",s,s ,s,s";
   const std::string hola_name = "hola";
   std::string test_start_text = "Expected \"" + hola_name + "\" ";
 
