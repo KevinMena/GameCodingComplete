@@ -524,6 +524,62 @@ TYPED_TEST(SerializerTest, stringType) {
       << std::string(hola_res3.get());
 }
 
+TYPED_TEST(SerializerTest, nullType) {
+  std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
+
+  const std::string hola_name = "hola";
+  std::string test_start_text = "Expected \"" + hola_name + "\" ";
+
+  EXPECT_TRUE(serializer->SetNull(hola_name.c_str(), hola_name.length()))
+      << test_start_text << "to be inserted";
+  EXPECT_TRUE(serializer->IsNull(hola_name.c_str()))
+      << test_start_text << "to be a nul";
+
+  // Pretty Compile
+  EXPECT_TRUE(serializer->CompilePretty()) << "Failed to Pretty Compile";
+
+  Serializer::s_size size;
+
+  EXPECT_TRUE(serializer->GetSize(&size))
+      << "Failed to Get Size of Pretty Compile";
+
+  std::unique_ptr<char[]> resp(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp.get()))
+      << "Failed to Get Pretty Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerPretty(
+      this->GetSerializer());
+
+  std::string prettyCompile(resp.get());
+
+  EXPECT_TRUE(
+      serializerPretty->ParseText(resp.get(), static_cast<size_t>(size)))
+      << "Failed to Parse Pretty Compile\n"
+      << prettyCompile;
+  EXPECT_TRUE(serializerPretty->IsNull(hola_name.c_str()))
+      << test_start_text << "to be a null in Pretty Compile";
+
+  // Compile
+  EXPECT_TRUE(serializer->Compile()) << "Failed to Compile";
+
+  EXPECT_TRUE(serializer->GetSize(&size)) << "Failed to Get Size of Compile";
+
+  std::unique_ptr<char[]> resp2(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp2.get())) << "Failed to Get Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerNormal(
+      this->GetSerializer());
+
+  std::string compile(resp2.get());
+
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile" << compile;
+  EXPECT_TRUE(serializerNormal->IsNull(hola_name.c_str()))
+      << test_start_text << "to be a null in Compile";
+}
+
 TYPED_TEST(SerializerTest, intArrayType) {
   std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
 
@@ -1017,7 +1073,7 @@ TYPED_TEST(SerializerTest, doubleArrayType) {
   hola_resp.clear();
   for (size_t i = 0; i < array_size; i++) {
     EXPECT_TRUE(serializerNormal->GetDouble(hola_name.c_str(), &hola_res))
-        << test_start_text << "to be an int in Pretty Compile";
+        << test_start_text << "to be an int in Compile";
     hola_resp.push_back(hola_res);
     EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
@@ -1140,6 +1196,92 @@ TYPED_TEST(SerializerTest, stringArrayType) {
     EXPECT_TRUE(serializerNormal->GetString(nullptr, str_resp.get())) << "Failed to Get String in Compile";
 
     EXPECT_STREQ(str_resp.get(), hola[i].c_str());
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
+  }
+  EXPECT_TRUE(serializerNormal->CloseArray());
+}
+
+TYPED_TEST(SerializerTest, nullArrayType) {
+  std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
+
+  const std::vector<int> hola{0, 0, 0, 0, 0};
+  const std::string hola_name = "hola";
+  std::string test_start_text = "Expected \"" + hola_name + "\" ";
+
+  EXPECT_TRUE(serializer->SetArray(hola_name.c_str(), hola_name.length()));
+
+  EXPECT_TRUE(serializer->SetNull(nullptr, 0));
+  EXPECT_TRUE(serializer->IsArray(hola_name.c_str()));
+
+  for (size_t i = 1; i < hola.size(); i++) {
+    EXPECT_TRUE(serializer->SetNull(nullptr, 0));
+  }
+
+  EXPECT_TRUE(serializer->CloseArray());
+
+  // Pretty Compile
+  EXPECT_TRUE(serializer->CompilePretty()) << "Failed to Pretty Compile";
+
+  Serializer::s_size size;
+
+  EXPECT_TRUE(serializer->GetSize(&size))
+      << "Failed to Get Size of Pretty Compile";
+
+  std::unique_ptr<char[]> resp(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp.get()))
+      << "Failed to Get Pretty Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerPretty(
+      this->GetSerializer());
+
+  std::string prettyCompile(resp.get());
+
+  EXPECT_TRUE(serializerPretty->ParseText(resp.get()))
+      << "Failed to Parse Pretty Compile\n"
+      << prettyCompile;
+
+  Serializer::s_size array_size;
+
+  EXPECT_TRUE(serializerPretty->IsArray(hola_name.c_str())) << prettyCompile;
+  EXPECT_TRUE(
+      serializerPretty->GetArrayCapacity(hola_name.c_str(), &array_size));
+  ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
+  EXPECT_TRUE(serializerPretty->OpenArray(hola_name.c_str()));
+
+  for (size_t i = 0; i < array_size; i++) {
+    EXPECT_TRUE(serializerPretty->IsNull(nullptr))
+        << test_start_text << "to be a null in Pretty Compile";
+
+    EXPECT_TRUE(serializerPretty->MoveArray() || i == array_size - 1);
+  }
+
+  EXPECT_TRUE(serializerPretty->CloseArray());
+
+  // Compile
+  EXPECT_TRUE(serializer->Compile()) << "Failed to Compile";
+
+  EXPECT_TRUE(serializer->GetSize(&size)) << "Failed to Get Size of Compile";
+
+  std::unique_ptr<char[]> resp2(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp2.get())) << "Failed to Get Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerNormal(
+      this->GetSerializer());
+
+  std::string compile(resp2.get());
+
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
+  ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
+  for (size_t i = 0; i < array_size; i++) {
+    EXPECT_TRUE(serializerNormal->IsNull(nullptr))
+        << test_start_text << "to be a null in Compile";
     EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
   }
   EXPECT_TRUE(serializerNormal->CloseArray());
