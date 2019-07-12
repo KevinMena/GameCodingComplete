@@ -61,7 +61,8 @@ TYPED_TEST(SerializerTest, intType) {
 
   hola_res = -1;
 
-  EXPECT_TRUE(serializerPretty->ParseText(resp.get(), static_cast<size_t>(size)))
+  EXPECT_TRUE(
+      serializerPretty->ParseText(resp.get(), static_cast<size_t>(size)))
       << "Failed to Parse Pretty Compile\n"
       << prettyCompile;
   EXPECT_TRUE(serializerPretty->GetInt(hola_name.c_str(), &hola_res))
@@ -1014,4 +1015,112 @@ TYPED_TEST(SerializerTest, doubleArrayType) {
   }
 
   EXPECT_TRUE(serializer->CloseArray());
+}
+
+TYPED_TEST(SerializerTest, stringArrayType) {
+  std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
+
+  const std::vector<std::string> hola{
+      "sdfsd fsdfsdf sdfsssss  ssdd sdfssSSS SdfSDFf ",
+      "FFFSF sdSSSSSS,,,,;;;\"sdfsdf\",s,s ,s,s",
+      "AAAAAAAaaaAaa\t\t\t\taaaadsasdacc;;;;;;\"\"\"\\",
+      "234o233o2o2.2.2.3.42.3423f", "{\"hola\":\"hola\"}"};
+  const std::string hola_name = "hola";
+  std::string test_start_text = "Expected \"" + hola_name + "\" ";
+
+  EXPECT_TRUE(serializer->SetArray(hola_name.c_str(), hola_name.length()));
+
+  EXPECT_TRUE(
+      serializer->SetString(nullptr, 0, hola[0].c_str(), hola[0].size()));
+  EXPECT_TRUE(serializer->IsArray(hola_name.c_str()));
+
+  for (size_t i = 1; i < hola.size(); i++) {
+    EXPECT_TRUE(
+        serializer->SetString(nullptr, 0, hola[i].c_str(), hola[i].size()));
+  }
+
+  EXPECT_TRUE(serializer->CloseArray());
+
+  // Pretty Compile
+  EXPECT_TRUE(serializer->CompilePretty()) << "Failed to Pretty Compile";
+
+  Serializer::s_size size;
+
+  EXPECT_TRUE(serializer->GetSize(&size))
+      << "Failed to Get Size of Pretty Compile";
+
+  std::unique_ptr<char[]> resp(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp.get()))
+      << "Failed to Get Pretty Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerPretty(
+      this->GetSerializer());
+
+  std::string prettyCompile(resp.get());
+
+  EXPECT_TRUE(serializerPretty->ParseText(resp.get()))
+      << "Failed to Parse Pretty Compile\n"
+      << prettyCompile;
+
+  Serializer::s_size array_size;
+
+  EXPECT_TRUE(serializerPretty->IsArray(hola_name.c_str())) << prettyCompile;
+  EXPECT_TRUE(
+      serializerPretty->GetArrayCapacity(hola_name.c_str(), &array_size));
+  ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
+  EXPECT_TRUE(serializerPretty->OpenArray(hola_name.c_str()));
+
+  for (size_t i = 0; i < array_size; i++) {
+    Serializer::s_size str_size;
+
+    EXPECT_TRUE(serializerPretty->GetStringSize(nullptr, &str_size))
+        << "Failed to Get String Size in Pretty Compile";
+
+    std::unique_ptr<char[]> str_resp(new char[str_size]);
+
+    EXPECT_TRUE(serializerPretty->GetString(nullptr, str_resp.get())) << "Failed to Get String in Pretty Compile";
+
+    EXPECT_STREQ(str_resp.get(), hola[i].c_str());
+
+    EXPECT_TRUE(serializerPretty->MoveArray() || i == array_size - 1);
+  }
+
+  EXPECT_TRUE(serializerPretty->CloseArray());
+
+  // Compile
+  EXPECT_TRUE(serializer->Compile()) << "Failed to Compile";
+
+  EXPECT_TRUE(serializer->GetSize(&size)) << "Failed to Get Size of Compile";
+
+  std::unique_ptr<char[]> resp2(new char[size]);
+
+  EXPECT_TRUE(serializer->GetText(resp2.get())) << "Failed to Get Compile";
+
+  std::unique_ptr<Serializer::ISerializer> serializerNormal(
+      this->GetSerializer());
+
+  std::string compile(resp2.get());
+
+  EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
+      << "Failed to Parse Compile\n"
+      << compile;
+
+  EXPECT_TRUE(serializerNormal->GetArrayCapacity(hola_name.c_str(), &array_size));
+  ASSERT_EQ(array_size, hola.size()) << "Arrays of Different Size";
+  EXPECT_TRUE(serializerNormal->OpenArray(hola_name.c_str()));
+  for (size_t i = 0; i < array_size; i++) {
+      Serializer::s_size str_size;
+
+    EXPECT_TRUE(serializerNormal->GetStringSize(nullptr, &str_size))
+        << "Failed to Get String Size in Compile";
+
+    std::unique_ptr<char[]> str_resp(new char[str_size]);
+
+    EXPECT_TRUE(serializerNormal->GetString(nullptr, str_resp.get())) << "Failed to Get String in Compile";
+
+    EXPECT_STREQ(str_resp.get(), hola[i].c_str());
+    EXPECT_TRUE(serializerNormal->MoveArray() || i == array_size - 1);
+  }
+  EXPECT_TRUE(serializerNormal->CloseArray());
 }
