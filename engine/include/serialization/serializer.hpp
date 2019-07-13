@@ -224,10 +224,10 @@ public:
   array entry is opened
   */
   virtual bool OpenArray(const char *name) const = 0;
-  /* Get Current/Named Array Capacity */
+  /* Get Named Array or Arrary inside Array Capacity */
   virtual bool GetArrayCapacity(const char *name, s_size *size) const = 0;
   /* Moves the Current Array Iterator. It starts at begin(). This function will
-   * return false when it hits end() */
+   * return false when it tries to move end() */
   virtual bool MoveArray() const = 0;
   /* Close an array entry */
   virtual bool CloseArray() const = 0;
@@ -235,6 +235,15 @@ public:
   /* Virtual Destructor */
   virtual ~ISerializer() = default;
 };
+
+
+// Get the name of a variable as a string
+#define GET_NAME(name) XGET_NAME(name)
+#define XGET_NAME(name) XXGET_NAME(name)
+#define XXGET_NAME(name) #name
+
+// Set the name of a variable for the serializer
+#define SET_NAME(name) GET_NAME(name), (sizeof(GET_NAME(name))-1)
 
 } // namespace Serializer
 
