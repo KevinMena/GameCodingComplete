@@ -1262,7 +1262,10 @@ TYPED_TEST(SerializerTest, nullArrayType) {
     EXPECT_TRUE(serializerPretty->IsNull(nullptr))
         << test_start_text << "to be a null in Pretty Compile";
 
-    EXPECT_TRUE(serializerPretty->MoveArray() || i == array_size - 1);
+    EXPECT_TRUE(
+        (serializerPretty->CanMoveArray() && serializerPretty->MoveArray()) ||
+        (i == array_size - 1 && (!serializerPretty->CanMoveArray() &&
+                                 !serializerPretty->MoveArray())));
   }
 
   EXPECT_TRUE(serializerPretty->CloseArray());
@@ -1296,8 +1299,6 @@ TYPED_TEST(SerializerTest, nullArrayType) {
   }
   EXPECT_TRUE(serializerNormal->CloseArray());
 }
-
-
 
 using RecursiveStruct = struct RecursiveStruct {
   std::string m_someText;
@@ -1416,33 +1417,33 @@ using RecursiveStruct = struct RecursiveStruct {
     return true;
   }
 
-  static std::unique_ptr<RecursiveStruct> Deserialize(const Serializer::ISerializer *serializer, const char *name) {
+  static std::unique_ptr<RecursiveStruct>
+  Deserialize(const Serializer::ISerializer *serializer, const char *name) {
 
     Serializer::s_size version;
-    
+
     if (!serializer->OpenEntry(name, &version)) {
       return nullptr;
     }
 
-    if (version != kSerializerVersion)
-    {
+    if (version != kSerializerVersion) {
       return nullptr;
     }
 
     size_t size;
 
     if (!serializer->GetStringLength(GET_NAME(m_someText), &size)) {
-      return nullptr; 
+      return nullptr;
     }
 
     std::unique_ptr<char[]> someText(new char[size]);
-    
 
     if (!serializer->GetString(GET_NAME(m_someText), someText.get())) {
       return nullptr;
     }
 
-    std::unique_ptr<RecursiveStruct> object = std::make_unique<RecursiveStruct>();
+    std::unique_ptr<RecursiveStruct> object =
+        std::make_unique<RecursiveStruct>();
 
     object->m_someText.clear();
 
@@ -1462,7 +1463,8 @@ using RecursiveStruct = struct RecursiveStruct {
 
     Serializer::s_size m_someUints_size;
 
-    if (!serializer->GetArrayCapacity(GET_NAME(m_someUints), &m_someUints_size)) {
+    if (!serializer->GetArrayCapacity(GET_NAME(m_someUints),
+                                      &m_someUints_size)) {
       return nullptr;
     }
 
@@ -1476,14 +1478,14 @@ using RecursiveStruct = struct RecursiveStruct {
     {
       uint64_t tmp;
 
-    for (Serializer::s_size i = 0; i < m_someUints_size; i++)
-    {
-      if (!serializer->GetUint64(nullptr, &tmp)) {
-        return nullptr;
+      for (Serializer::s_size i = 0; i < m_someUints_size; i++) {
+        if (!serializer->GetUint64(nullptr, &tmp)) {
+          return nullptr;
+        }
+        object->m_someUints.push_back(tmp);
+        serializer->MoveArray();
       }
-      object->m_someUints.push_back(tmp);
-      serializer->MoveArray();
-    }}
+    }
 
     if (!serializer->CloseArray()) {
       return nullptr;
@@ -1493,13 +1495,11 @@ using RecursiveStruct = struct RecursiveStruct {
 
     if (!serializer->IsNull(GET_NAME(m_aPtr))) {
 
-      
       object->m_aPtr = std::move(Deserialize(serializer, GET_NAME(m_aPtr)));
 
       if (!object->m_aPtr) {
         return nullptr;
       }
-
     }
 
     if (!serializer->CloseEntry()) {
@@ -1524,7 +1524,7 @@ std::uniform_int_distribution<uint64_t> RecursiveStruct::kUintDistribution;
 std::uniform_real_distribution<double> RecursiveStruct::kDoubleDistribution;
 
 TYPED_TEST(SerializerTest, recursiveObject) {
-  RecursiveStruct * recTmp = new RecursiveStruct();
+  RecursiveStruct *recTmp = new RecursiveStruct();
 
   recTmp->SetRandom("LOWESTaljsdlakjsldasd;;;;;;;;\"\n\t");
 
@@ -1532,7 +1532,8 @@ TYPED_TEST(SerializerTest, recursiveObject) {
 
   recTmp->SetRandom("\"MIDDLE\"");
 
-  std::unique_ptr<RecursiveStruct> rec = std::make_unique<RecursiveStruct>(recTmp);
+  std::unique_ptr<RecursiveStruct> rec =
+      std::make_unique<RecursiveStruct>(recTmp);
   recTmp = nullptr;
   rec->SetRandom("\"HIGHEST\"");
 
@@ -1541,7 +1542,9 @@ TYPED_TEST(SerializerTest, recursiveObject) {
 
   std::unique_ptr<Serializer::ISerializer> serializer(this->GetSerializer());
 
-  EXPECT_TRUE(rec->Serialize(serializer.get(), hola_name.c_str(), hola_name.length())) << "failed to serialize";
+  EXPECT_TRUE(
+      rec->Serialize(serializer.get(), hola_name.c_str(), hola_name.length()))
+      << "failed to serialize";
 
   // Pretty Compile
   EXPECT_TRUE(serializer->CompilePretty()) << "Failed to Pretty Compile";
@@ -1566,10 +1569,14 @@ TYPED_TEST(SerializerTest, recursiveObject) {
       << "Failed to Parse Pretty Compile\n"
       << prettyCompile;
 
-  std::unique_ptr<RecursiveStruct> rec_resp = RecursiveStruct::Deserialize(serializerPretty.get(), hola_name.c_str());
+  std::unique_ptr<RecursiveStruct> rec_resp =
+      RecursiveStruct::Deserialize(serializerPretty.get(), hola_name.c_str());
 
-  EXPECT_TRUE(rec_resp) << "Failed to Deserialize in Pretty Compile\n" << prettyCompile;
-  EXPECT_TRUE(*rec == *rec_resp) << "Failed to Deserialize Correctly in Pretty Compile\n" << prettyCompile;
+  EXPECT_TRUE(rec_resp) << "Failed to Deserialize in Pretty Compile\n"
+                        << prettyCompile;
+  EXPECT_TRUE(*rec == *rec_resp)
+      << "Failed to Deserialize Correctly in Pretty Compile\n"
+      << prettyCompile;
 
   // Compile
   EXPECT_TRUE(serializer->Compile()) << "Failed to Compile";
@@ -1587,10 +1594,13 @@ TYPED_TEST(SerializerTest, recursiveObject) {
 
   EXPECT_TRUE(serializerNormal->ParseText(resp2.get()))
       << "Failed to Parse Compile" << compile;
-  
+
   rec_resp.reset();
-  rec_resp = RecursiveStruct::Deserialize(serializerNormal.get(), hola_name.c_str());
+  rec_resp =
+      RecursiveStruct::Deserialize(serializerNormal.get(), hola_name.c_str());
 
   EXPECT_TRUE(rec_resp) << "Failed to Deserialize in Compile\n" << compile;
-  EXPECT_TRUE(*rec == *rec_resp) << "Failed to Deserialize Correctly in Compile\n" << compile;
+  EXPECT_TRUE(*rec == *rec_resp)
+      << "Failed to Deserialize Correctly in Compile\n"
+      << compile;
 }
