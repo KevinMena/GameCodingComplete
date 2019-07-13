@@ -433,23 +433,27 @@ bool JsonSerializer::GetArrayCapacity(const char *name, s_size *size) const {
   }
 }
 
+bool JsonSerializer::CanMoveArray() const {
+  // We are inside an array
+  if (IsInsideArray()) {
+    rapidjson::Value::ValueIterator current = m_currentArrayIter.back();
+
+    return m_currentEntry.back().get().End() != current;
+  }
+  return false;
+}
+
 bool JsonSerializer::MoveArray() const {
   // We are inside an array
   if (IsInsideArray()) {
     rapidjson::Value::ValueIterator current = m_currentArrayIter.back();
 
-    // We are the last position
+    // We are at the last position
     if (m_currentEntry.back().get().End() == current) {
       return false;
     }
 
     ++current;
-
-    // We will be at the last position
-    if (m_currentEntry.back().get().End() == current) {
-      return false;
-    }
-
     m_currentArrayIter.pop_back();
     m_currentArrayIter.push_back(current);
 

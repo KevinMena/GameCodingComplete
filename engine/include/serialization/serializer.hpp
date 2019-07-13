@@ -226,6 +226,8 @@ public:
   virtual bool OpenArray(const char *name) const = 0;
   /* Get Named Array or Arrary inside Array Capacity */
   virtual bool GetArrayCapacity(const char *name, s_size *size) const = 0;
+  /* If the Current Array Iterator is not end() */
+  virtual bool CanMoveArray() const = 0;
   /* Moves the Current Array Iterator. It starts at begin(). This function will
    * return false when it tries to move end() */
   virtual bool MoveArray() const = 0;

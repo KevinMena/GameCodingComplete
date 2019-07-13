@@ -237,10 +237,12 @@ public:
   array entry is opened
   */
   bool OpenArray(const char *name) const final;
-  /* Get Current/Named Array Capacity */
+  /* Get Named Array or Arrary inside Array Capacity */
   bool GetArrayCapacity(const char *name, s_size *size) const final;
+  /* If the Current Array Iterator is not end() */
+  bool CanMoveArray() const final;
   /* Moves the Current Array Iterator. It starts at begin(). This function will
-   * return false when it hits end() */
+   * return false when it tries to move end() */
   bool MoveArray() const final;
   /* Close an array entry */
   bool CloseArray() const final;
