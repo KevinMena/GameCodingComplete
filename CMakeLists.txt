@@ -191,7 +191,7 @@ if(${BUILD_TESTING})
 
     # https://github.com/google/googletest/blob/master/googlemock/README.md
     target_link_libraries(kch_engine_test gmock_main)
-
+    add_test(kch_engine_test COMMAND kch_engine_test)
 endif()
 
 include_directories(${ENGINE_SOURCE_FOLDER}/include)
