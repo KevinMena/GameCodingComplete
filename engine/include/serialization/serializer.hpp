@@ -3,7 +3,9 @@
 #define SERIALIZER_HPP 1
 
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <type_traits>
 
 namespace Serializer {
 /* Type for sizes (arrays, strings, etc...) */
@@ -26,15 +28,17 @@ public:
   virtual bool GetSize(s_size *size) = 0;
   /* Get Length (amount of chars used) of the compiled internals */
   virtual bool GetLength(s_size *length) = 0;
-  /* Put the compiled internals in a char array. It should have at least enough space */
+  /* Put the compiled internals in a char array. It should have at least enough
+   * space */
   virtual bool GetText(char *text) = 0;
 
   /*
-  Open an space for a new entry with name and version. Length excludes null terminator.
-  If it is at the same level as an opened array, the name is not used and the
-  entry is appended to the array
+  Open an space for a new entry with name and version. Length excludes null
+  terminator. If it is at the same level as an opened array, the name is not
+  used and the entry is appended to the array
   */
-  virtual bool SetEntry(const char *name, s_size name_length, s_size version) = 0;
+  virtual bool SetEntry(const char *name, s_size name_length,
+                        s_size version) = 0;
   /*
   Gets in the space of an entry and return its version
   If it is at the same level as an opened array, the name is not used and the
@@ -68,7 +72,8 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   is appended to the array
   */
-  virtual bool SetUint(const char *name, s_size name_length, unsigned value) = 0;
+  virtual bool SetUint(const char *name, s_size name_length,
+                       unsigned value) = 0;
   /*
   Gets if the current/named entry is an unsigned
   If it is at the same level as an opened array, the name is not used and it
@@ -106,7 +111,8 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   is appended to the array
   */
-  virtual bool SetUint64(const char *name, s_size name_length, uint64_t value) = 0;
+  virtual bool SetUint64(const char *name, s_size name_length,
+                         uint64_t value) = 0;
   /*
   Gets if the current/named entry is an uint64_t
   If it is at the same level as an opened array, the name is not used and it
@@ -125,7 +131,8 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   is appended to the array
   */
-  virtual bool SetInt64(const char *name, s_size name_length, int64_t value) = 0;
+  virtual bool SetInt64(const char *name, s_size name_length,
+                        int64_t value) = 0;
   /*
   Gets if the current/named entry is an int64_t
   If it is at the same level as an opened array, the name is not used and it
@@ -144,7 +151,8 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   is appended to the array
   */
-  virtual bool SetDouble(const char *name, s_size name_length, double value) = 0;
+  virtual bool SetDouble(const char *name, s_size name_length,
+                         double value) = 0;
   /*
   Gets if the current/named entry is an double
   If it is at the same level as an opened array, the name is not used and it
@@ -163,7 +171,8 @@ public:
   If it is at the same level as an opened array, the name is not used and it
   is appended to the array
   */
-  virtual bool SetString(const char *name, s_size name_length, const char *value, s_size length) = 0;
+  virtual bool SetString(const char *name, s_size name_length,
+                         const char *value, s_size length) = 0;
   /*
   Gets if the current/named entry is a string
   If it is at the same level as an opened array, the name is not used and it
@@ -183,9 +192,9 @@ public:
   */
   virtual bool GetStringSize(const char *name, s_size *result) const = 0;
   /*
-  Gets the named or current string entry. The result pointer must be able to hold the string
-  If it is at the same level as an opened array, the name is not used and it
-  gets the current opened entry is
+  Gets the named or current string entry. The result pointer must be able to
+  hold the string If it is at the same level as an opened array, the name is not
+  used and it gets the current opened entry is
   */
   virtual bool GetString(const char *name, char *result) const = 0;
 
@@ -238,14 +247,75 @@ public:
   virtual ~ISerializer() = default;
 };
 
-
 // Get the name of a variable as a string
 #define GET_NAME(name) XGET_NAME(name)
 #define XGET_NAME(name) XXGET_NAME(name)
 #define XXGET_NAME(name) #name
 
 // Set the name of a variable for the serializer
-#define SET_NAME(name) GET_NAME(name), (sizeof(GET_NAME(name))-1)
+#define SET_NAME(name) GET_NAME(name), (sizeof(GET_NAME(name)) - 1)
+
+/*
+  A class that can be serialized.
+  To implement it Derive from ISerializableImpl
+*/
+class ISerializable {
+public:
+  /* Serialize this class */
+  virtual bool Serialize(ISerializer *serializer, const char *name,
+                         s_size name_length) = 0;
+
+  /* Deserialize */
+  template <class T>
+  static inline auto Deserialize(const Serializer::ISerializer *serializer,
+                                 const char *name) {
+    return T::Deserialize(serializer, name);
+  }
+
+  virtual ~ISerializable() = default;
+};
+
+/* Deserialize a class */
+template <class T>
+inline auto Deserialize(const Serializer::ISerializer *serializer,
+                        const char *name) {
+  return ISerializable::Deserialize<T>(serializer, name);
+}
+
+/*
+  Handle Serialization Checking
+  Note: This uses a non trivial Destructor, don't use with implicit functions
+  (i.e implicit move semantics), use explicit ones (PS. its a good practice)
+*/
+template <class Derived> class ISerializableImpl : public ISerializable {
+private:
+  template <class T> struct is_unique_ptr : std::false_type {};
+
+  template <class T, class D>
+  struct is_unique_ptr<std::unique_ptr<T, D>> : std::true_type {};
+
+public:
+  virtual ~ISerializableImpl() {
+
+    // This is used to get the return type of the function only for C++17
+    // God forgive you if you are using older standards
+    using derived_decltype = std::remove_cv_t<
+        std::invoke_result_t<decltype(&Derived::Deserialize),
+                             const Serializer::ISerializer *, const char *>>;
+
+    static_assert(
+        is_unique_ptr<derived_decltype>()
+        /* && std::is_same_v<derived_function_ptr, expected_function_ptr> */,
+        "Couldn't find a Deserialize function that returns a std::unique_ptr");
+
+    using derived_decltype_element = typename std::remove_all_extents_t<
+        typename std::remove_cv_t<typename derived_decltype::element_type>>;
+
+    static_assert(std::is_same_v<derived_decltype_element, Derived>,
+                  "The Serialization function does not return a unique_ptr of "
+                  "the Serialized Type");
+  }
+};
 
 } // namespace Serializer
 

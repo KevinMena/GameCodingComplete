@@ -1300,7 +1300,8 @@ TYPED_TEST(SerializerTest, nullArrayType) {
   EXPECT_TRUE(serializerNormal->CloseArray());
 }
 
-using RecursiveStruct = struct RecursiveStruct {
+class RecursiveStruct : public Serializer::ISerializableImpl<RecursiveStruct> {
+public:
   std::string m_someText;
   int m_anInt;
   double m_aDouble;
@@ -1315,7 +1316,7 @@ using RecursiveStruct = struct RecursiveStruct {
     m_aPtr = std::unique_ptr<RecursiveStruct>(ptr);
   }
 
-  ~RecursiveStruct() = default;
+  virtual ~RecursiveStruct() = default;
 
   void SetRandom(const char *text) {
     m_someText.clear();
@@ -1514,7 +1515,7 @@ private:
   static std::uniform_int_distribution<int> kIntDistribution;
   static std::uniform_int_distribution<uint64_t> kUintDistribution;
   static std::uniform_real_distribution<double> kDoubleDistribution;
-  static constexpr int kMaxVectorSize = 4;
+  static constexpr int kMaxVectorSize = 512;
   static constexpr Serializer::s_size kSerializerVersion = 0;
 };
 
