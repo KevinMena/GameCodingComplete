@@ -169,6 +169,9 @@ endif()
 # https://www.jetbrains.com/help/clion/quick-cmake-tutorial.html
 add_executable(kch_engine ${KCH_ENGINE_SRC})
 
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 # Set Warnings
 # See: https://foonathan.net/blog/2018/10/17/cmake-warnings.html
 # In case a library starts failing due to warnings, this links contains a fix
