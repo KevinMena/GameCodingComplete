@@ -169,16 +169,16 @@ endif()
 # https://www.jetbrains.com/help/clion/quick-cmake-tutorial.html
 add_executable(kch_engine ${KCH_ENGINE_SRC})
 
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
 # Set Warnings
 # See: https://foonathan.net/blog/2018/10/17/cmake-warnings.html
 # In case a library starts failing due to warnings, this links contains a fix
 target_compile_options(kch_engine PRIVATE
                            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic -Werror>
-                           $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>)
+                           $<$<CXX_COMPILER_ID:MSVC>:/utf-8 /W4 /WX>)
 
+
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 if(${BUILD_TESTING})
     add_executable(kch_engine_test ${KCH_ENGINE_TEST_SRC} ${KCH_ENGINE_FOR_TEST_SRC})
