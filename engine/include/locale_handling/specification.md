@@ -27,3 +27,5 @@ The global Locale for C and the standard Local for C++ is **en_US.UTF8**. That m
 - **DO NOT** change the numerical locale for anything that must go to other service or be stored. It is okay for UI displaying or reading.
 
 - **ALL** numbers stored must be read and written using **en_US.UTF8**. **No exceptions**.
+
+- **DO NOT USE UTF16** except for syscalls to Windows.
