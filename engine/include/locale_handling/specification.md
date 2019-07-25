@@ -18,6 +18,8 @@ The global Locale for C and the standard Local for C++ is **en_US.UTF8**. That m
 
 ## Da Rules
 
+- The Locale Setup must be done before any IO operation.
+
 - **DO NOT** change the C Locale at runtime, it will be a global change that will break any text IO operation happening at the same time (threads).
 
 - **DO NOT** change the global settings of C++ or the ones of cin, cout and cerr.
