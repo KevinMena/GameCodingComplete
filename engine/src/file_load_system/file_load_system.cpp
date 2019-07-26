@@ -49,6 +49,7 @@ error_status SetupFileLoadSystem() {
 #if IS_WIN
 
   {
+    // See: https://stackoverflow.com/questions/143174/how-do-i-get-the-directory-that-a-program-is-running-from
     wchar_t buffer[MAX_PATH + 1];
     DWORD size = GetModuleFileNameW(NULL, buffer, MAX_PATH);
 
