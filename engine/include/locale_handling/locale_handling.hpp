@@ -54,13 +54,31 @@ inline void SetStartupLocale() {
 
 #if IS_WIN
 
+/* Container for UFT16 Strings */
+using UTF16_Container = typename rapidjson::GenericStringBuffer<rapidjson::UTF16<>>;
+
+/* Container for UFT8 Strings */
+using UTF8_Container = typename rapidjson::GenericStringBuffer<rapidjson::UTF8<>>;
+
 /* Convert a utf8 char array (not owning) to utf16. Warning: this allocates
  * memory */
-rapidjson::GenericStringBuffer<rapidjson::UTF16<>> Transcode(const char *str);
+UTF16_Container TranscodeToUTF16(const char *str);
 
 /* Convert a utf8 string to utf16. Warning: this allocates memory */
-rapidjson::GenericStringBuffer<rapidjson::UTF16<>>
-Transcode(const std::string &str);
+inline UTF16_Container
+TranscodeToUTF16(const std::string &str) {
+  return TranscodeToUTF16(str.c_str());
+}
+
+/* Convert a utf16 char array (not owning) to utf8. Warning: this allocates
+ * memory */
+UTF8_Container TranscodeToUTF8(const wchar_t *str);
+
+/* Convert a utf16 string to utf8. Warning: this allocates memory */
+inline UTF8_Container
+TranscodeToUTF8(const std::wstring &str) {
+  return TranscodeToUTF8(str.c_str());
+}
 
 #else // !IS_WIN
 

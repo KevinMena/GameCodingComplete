@@ -15,10 +15,10 @@ const std::locale kStartupLocale = std::locale(kStartupLocaleName);
 
 #if IS_WIN
 
-rapidjson::GenericStringBuffer<rapidjson::UTF16<>> Transcode(const char *str) {
+UTF16_Container TranscodeToUTF16(const char *str) {
   // From http://rapidjson.org/md_doc_encoding.html
   rapidjson::StringStream source(str);
-  rapidjson::GenericStringBuffer<rapidjson::UTF16<>> target;
+  UTF16_Container target;
   bool hasError = false;
   while (source.Peek() != '\0') {
     if (!rapidjson::Transcoder<rapidjson::UTF8<>,
@@ -33,9 +33,22 @@ rapidjson::GenericStringBuffer<rapidjson::UTF16<>> Transcode(const char *str) {
   return {};
 }
 
-inline rapidjson::GenericStringBuffer<rapidjson::UTF16<>>
-Transcode(const std::string &str) {
-  return Transcode(str.c_str());
+UTF8_Container TranscodeToUTF8(const wchar_t *str) {
+  // From http://rapidjson.org/md_doc_encoding.html
+  rapidjson::GenericStringStream<rapidjson::UTF16<>> source(str);
+  UTF8_Container target;
+  bool hasError = false;
+  while (source.Peek() != '\0') {
+    if (!rapidjson::Transcoder<rapidjson::UTF16<>,
+                               rapidjson::UTF8<>>::Transcode(source, target)) {
+      hasError = true;
+      break;
+    }
+  }
+  if (!hasError) {
+    return target;
+  }
+  return {};
 }
 
 #endif // IS_WIN
