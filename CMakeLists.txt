@@ -17,6 +17,10 @@ if (${BUILD_OFFLINE})
     message("Working offline, not pulling external projects")
 endif()
 
+# Unicode is UTF8. Accept no substitutes
+add_compile_options($<$<C_COMPILER_ID:MSVC>:/utf-8>)
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+
 # Detect Multi Config Generator 
 # See: https://gitlab.kitware.com/cmake/cmake/issues/17645
 get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -174,11 +178,8 @@ add_executable(kch_engine ${KCH_ENGINE_SRC})
 # In case a library starts failing due to warnings, this links contains a fix
 target_compile_options(kch_engine PRIVATE
                            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic -Werror>
-                           $<$<CXX_COMPILER_ID:MSVC>:/utf-8 /W4 /WX>)
+                           $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /DUNICODE=1 /D_UNICODE=1>)
 
-
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 if(${BUILD_TESTING})
     add_executable(kch_engine_test ${KCH_ENGINE_TEST_SRC} ${KCH_ENGINE_FOR_TEST_SRC})
