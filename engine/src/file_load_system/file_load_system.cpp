@@ -1,9 +1,16 @@
 #include "file_load_system/file_load_system.hpp"
 
-#include "os_detection/os_detection.hpp"
 #include "locale_handling/locale_handling.hpp"
+#include "os_detection/os_detection.hpp"
 
-#ifdef IS_WIN
+
+#if IS_LINUX
+#include <limits.h>
+#include <unistd.h>
+
+#endif // IS_LINUX
+
+#if IS_WIN
 #include "os_detection/windows.hpp"
 #endif // IS_WIN
 
@@ -20,58 +27,73 @@ namespace FileLoadSystem {
 /* Current Path */
 path kCurrentPath;
 
-const path &GetCurrentDirectory() {
-  return kCurrentPath;
-}
+const path &GetCurrentDirectory() { return kCurrentPath; }
 
 path kExecutableName;
 
-const path &GetExecutableName() {
-  return kExecutableName;
-}
+const path &GetExecutableName() { return kExecutableName; }
 
 /* Executable Path */
 path kExecutablePath;
 
-const path &GetExecutableDirectory() {
-  return kExecutablePath;
-}
-
+const path &GetExecutableDirectory() { return kExecutablePath; }
 
 error_status SetupFileLoadSystem() {
-    error_status error;
-    kCurrentPath = std::filesystem::current_path(error);
+  error_status error;
+  kCurrentPath = std::filesystem::current_path(error);
 
-    if( error ) {
-      return error;
-    }
+  if (error) {
+    return error;
+  }
 
 #if IS_WIN
 
   {
-    wchar_t buffer[MAX_PATH+1]; 
-    DWORD size = GetModuleFileNameW(NULL, buffer, MAX_PATH) ;
+    wchar_t buffer[MAX_PATH + 1];
+    DWORD size = GetModuleFileNameW(NULL, buffer, MAX_PATH);
 
-    if(size == 0) {
+    if (size == 0) {
       return std::make_error_code(std::errc::state_not_recoverable);
     }
 
     // This wont work on WinXP
-    // See: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+    // See:
+    // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
       return std::make_error_code(std::errc::not_enough_memory);
     }
 
-    LocaleHandling::UTF8_Container fixedBuffer = LocaleHandling::TranscodeToUTF8(buffer);
+    LocaleHandling::UTF8_Container fixedBuffer =
+        LocaleHandling::TranscodeToUTF8(buffer);
 
     kExecutableName = CreatePath(fixedBuffer.GetString());
     kExecutablePath = kExecutableName.parent_path();
-    
   }
 
-#endif // IS_WIN
+// IS_WIN
+#elif IS_LINUX
 
-    return error;
+  {
+    // https://stackoverflow.com/questions/5525668/how-to-implement-readlink-to-find-the-path
+    // PATH_MAX might be dangerous
+    char buff[PATH_MAX + 1];
+    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
+
+    if (len == -1) {
+      return std::make_error_code(std::errc::state_not_recoverable);
+    }
+
+    buff[len] = '\0';
+
+    kExecutableName = CreatePath(buff);
+    kExecutablePath = kExecutableName.parent_path();
+  }
+
+#else // !IS_WIN && !IS_LINUX
+#error This Platform is not yet supported to get paths
+#endif
+
+  return error;
 }
 
 } // namespace FileLoadSystem
