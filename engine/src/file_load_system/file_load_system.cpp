@@ -75,7 +75,7 @@ error_status SetupFileLoadSystem() {
 
   {
     // https://stackoverflow.com/questions/5525668/how-to-implement-readlink-to-find-the-path
-    // PATH_MAX might be dangerous
+    // PATH_MAX might be dangerous. See https://stackoverflow.com/a/38353197
     char buff[PATH_MAX + 1];
     ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
 
