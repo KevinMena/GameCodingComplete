@@ -50,6 +50,11 @@ inline std::uintmax_t FileSize(const path &p, error_status &error) {
   return std::filesystem::file_size(p, error);
 }
 
+/* Create Directories recursively for every element of path p that needs it  */
+inline bool CreateDirectories(const path &p, error_status &error) {
+  return std::filesystem::create_directories(p, error);
+}
+
 /* Remove a File or an Empty Directory */
 inline bool Remove(const path &p, error_status &error) {
   return std::filesystem::remove(p, error);
@@ -93,11 +98,6 @@ const path &GetExecutableDirectory();
 
 /* Get Executable Name Path. */
 const path &GetExecutableName();
-
-/* Create Directories recursively for every element of path p that needs it  */
-inline bool CreateDirectories(const path &p, error_status &error) {
-  return std::filesystem::create_directories(p, error);
-}
 
 /*
   Sets up the File Load System. Must be called before any File Operation
