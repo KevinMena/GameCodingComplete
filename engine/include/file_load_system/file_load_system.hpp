@@ -50,6 +50,21 @@ inline std::uintmax_t FileSize(const path &p, error_status &error) {
   return std::filesystem::file_size(p, error);
 }
 
+/* Remove a File or an Empty Directory */
+inline bool Remove(const path &p, error_status &error) {
+  return std::filesystem::remove(p, error);
+}
+
+/*
+  Remove a Directory with its content Recursively.
+  Returns the number of files and directories that were deleted (which may be
+  zero if p did not exist to begin with). The overload that takes error_code&
+  argument returns static_cast<std::uintmax_t>(-1) on error
+*/
+inline std::uintmax_t RemoveDirectory(const path &p, error_status &error) {
+  return std::filesystem::remove_all(p, error);
+}
+
 /* Get Directory for Temp Files. It should not fail on common filesystems */
 const path &GetTempDirectory();
 
@@ -67,11 +82,12 @@ inline bool CreateDirectories(const path &p, error_status &error) {
   return std::filesystem::create_directories(p, error);
 }
 
-/* 
+/*
   Sets up the File Load System. Must be called before any File Operation
   It needs Studio Name and Game Name for Temporary Folders Names
 */
-error_status SetupFileLoadSystem(const char* studio_name, const char* game_name);
+error_status SetupFileLoadSystem(const char *studio_name,
+                                 const char *game_name);
 
 /* Handle File Querys. This class is not thread safe. It is designed for an IO
  * Thread */
@@ -99,6 +115,21 @@ public:
   /* Create Directories recursively for every element of path p that needs it */
   inline bool CreateDirectories(const path &p) const {
     return FileLoadSystem::CreateDirectories(p, m_error);
+  }
+
+  /* Remove a File or an Empty Directory */
+  inline bool Remove(const path &p) {
+    return FileLoadSystem::Remove(p, m_error);
+  }
+
+  /*
+    Remove a Directory Recursively.
+    Returns the number of files and directories that were deleted (which may be
+    zero if p did not exist to begin with). The overload that takes error_code&
+    argument returns static_cast<std::uintmax_t>(-1) on error
+  */
+  inline std::uintmax_t RemoveDirectory(const path &p) {
+    return FileLoadSystem::RemoveDirectory(p, m_error);
   }
 
   /* Default Constructor and Destructor */
