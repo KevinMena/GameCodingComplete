@@ -44,6 +44,9 @@ public:
   /* Get File pointer */
   inline std::FILE *Get() { return m_file; }
 
+  /* If the File pointer is valid */
+  inline bool IsValid() const { return m_file != nullptr; }
+
 private:
   std::FILE *m_file;
 };
@@ -82,6 +85,9 @@ public:
 
   /* Get File pointer */
   inline std::FILE *Get() { return m_file; }
+
+  /* If the File pointer is valid */
+  inline bool IsValid() const { return m_file != nullptr; }
 
 private:
   std::FILE *m_file;
