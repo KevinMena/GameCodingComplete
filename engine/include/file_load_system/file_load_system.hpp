@@ -65,6 +65,18 @@ inline std::uintmax_t RemoveDirectory(const path &p, error_status &error) {
   return std::filesystem::remove_all(p, error);
 }
 
+/* Copies a File or a Directory (Non Recursively) */
+inline void Copy(const path &from, const path &to, error_status &error) {
+  return std::filesystem::copy(from, to, error);
+}
+
+/* Copies a Directory Recursively */
+inline void CopyRecursive(const path &from, const path &to,
+                          error_status &error) {
+  return std::filesystem::copy(from, to,
+                               std::filesystem::copy_options::recursive, error);
+}
+
 /* Get Directory for Temp Files. It should not fail on common filesystems */
 const path &GetTempDirectory();
 
@@ -130,6 +142,16 @@ public:
   */
   inline std::uintmax_t RemoveDirectory(const path &p) {
     return FileLoadSystem::RemoveDirectory(p, m_error);
+  }
+
+  /* Copies a File or a Directory (Non Recursively) */
+  inline void Copy(const path &from, const path &to) {
+    return FileLoadSystem::Copy(from, to, m_error);
+  }
+
+  /* Copies a Directory Recursively */
+  inline void CopyRecursive(const path &from, const path &to) {
+    return FileLoadSystem::CopyRecursive(from, to, m_error);
   }
 
   /* Default Constructor and Destructor */
