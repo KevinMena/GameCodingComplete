@@ -77,6 +77,11 @@ inline void CopyRecursive(const path &from, const path &to,
                                std::filesystem::copy_options::recursive, error);
 }
 
+/* Moves or renames a File or a Directory */
+inline void Rename(const path &from, const path &to, error_status &error) {
+  return std::filesystem::rename(from, to, error);
+}
+
 /* Get Directory for Temp Files. It should not fail on common filesystems */
 const path &GetTempDirectory();
 
@@ -152,6 +157,11 @@ public:
   /* Copies a Directory Recursively */
   inline void CopyRecursive(const path &from, const path &to) {
     return FileLoadSystem::CopyRecursive(from, to, m_error);
+  }
+
+  /* Moves or renames a File or a Directory */
+  inline void Rename(const path &from, const path &to) {
+    return FileLoadSystem::Rename(from, to, m_error);
   }
 
   /* Default Constructor and Destructor */
