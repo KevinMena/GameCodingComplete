@@ -110,9 +110,8 @@ public:
   FileLoadSystemHandler(const FileLoadSystemHandler &) = delete;
   FileLoadSystemHandler &operator=(const FileLoadSystemHandler &) = delete;
 
-  const error_status& GetErrorStatus() const {
-    return m_error;
-  }
+  /* Get Current Error Status */
+  const error_status &GetErrorStatus() const { return m_error; }
 
 private:
   /* Error code to avoid exceptions */
