@@ -63,6 +63,11 @@ int main(int argc, char **argv) {
 
   std::cout << FileLoadSystem::GetTempDirectory().generic_u8string() << std::endl;
 
+  FileLoadSystem::FileLoadSystemHandler handler;
+
+  FileLoadSystem::path testPath = handler.CreatePath("a/b/c");
+  handler.CreateDirectories(FileLoadSystem::GetExecutableDirectory() / testPath);
+
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);
 

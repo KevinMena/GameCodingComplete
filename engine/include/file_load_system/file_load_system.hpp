@@ -8,7 +8,6 @@
 #include "os_detection/windows.hpp"
 #endif // IS_WIN
 
-
 #include <cstdint>
 #include <filesystem>
 #include <system_error>
@@ -64,7 +63,7 @@ const path &GetExecutableDirectory();
 const path &GetExecutableName();
 
 /* Create Directories recursively for every element of path p that needs it  */
-inline bool CreateDirectories(const path& p, error_status &error) {
+inline bool CreateDirectories(const path &p, error_status &error) {
   return std::filesystem::create_directories(p, error);
 }
 
@@ -81,7 +80,7 @@ public:
   For more see std::filesystem for arguments
   */
   template <typename... Args> inline path CreatePath(Args &&... args) {
-    return FileLoadSystem::CreatePath<Args>(std::forward<Args>(args));
+    return FileLoadSystem::CreatePath<Args...>(std::forward<Args...>(args...));
   }
 
   /* If a File/Folder Exists. Not thread safe */
@@ -92,6 +91,11 @@ public:
   /* If a File Size. Not thread safe */
   inline std::uintmax_t FileSize(const path &p) {
     return FileLoadSystem::FileSize(p, m_error);
+  }
+
+  /* Create Directories recursively for every element of path p that needs it */
+  inline bool CreateDirectories(const path &p) {
+    return FileLoadSystem::CreateDirectories(p, m_error);
   }
 
   /* Default Constructor and Destructor */
