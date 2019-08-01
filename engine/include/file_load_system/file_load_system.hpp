@@ -67,8 +67,11 @@ inline bool CreateDirectories(const path &p, error_status &error) {
   return std::filesystem::create_directories(p, error);
 }
 
-/* Sets up the File Load System. Must be called before any File Operation */
-error_status SetupFileLoadSystem();
+/* 
+  Sets up the File Load System. Must be called before any File Operation
+  It needs Studio Name and Game Name for Temporary Folders Names
+*/
+error_status SetupFileLoadSystem(const char* studio_name, const char* game_name);
 
 /* Handle File Querys. This class is not thread safe. It is designed for an IO
  * Thread */

@@ -14,7 +14,7 @@
 int main(int argc, char **argv) {
 
   LocaleHandling::SetStartupLocale();
-  FileLoadSystem::SetupFileLoadSystem();
+  FileLoadSystem::SetupFileLoadSystem("KC", "Da Game");
 
   std::fstream fs, fs2;
   std::string s;

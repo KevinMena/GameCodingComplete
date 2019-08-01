@@ -43,7 +43,7 @@ path kExecutablePath;
 
 const path &GetExecutableDirectory() { return kExecutablePath; }
 
-error_status SetupFileLoadSystem() {
+error_status SetupFileLoadSystem(const char* studio_name, const char* game_name) {
   error_status error;
   kCurrentPath = std::filesystem::current_path(error);
 
@@ -56,6 +56,8 @@ error_status SetupFileLoadSystem() {
   if (error) {
     return error;
   }
+
+  kTempPath /= FileLoadSystem::CreatePath(studio_name) / FileLoadSystem::CreatePath(game_name);
 
 #if IS_WIN
 
