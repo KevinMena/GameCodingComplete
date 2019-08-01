@@ -79,7 +79,7 @@ public:
   It can use char* and std::string.
   For more see std::filesystem for arguments
   */
-  template <typename... Args> inline path CreatePath(Args &&... args) {
+  template <typename... Args> inline path CreatePath(Args &&... args) const {
     return FileLoadSystem::CreatePath<Args...>(std::forward<Args...>(args...));
   }
 
@@ -89,12 +89,12 @@ public:
   }
 
   /* If a File Size. Not thread safe */
-  inline std::uintmax_t FileSize(const path &p) {
+  inline std::uintmax_t FileSize(const path &p) const {
     return FileLoadSystem::FileSize(p, m_error);
   }
 
   /* Create Directories recursively for every element of path p that needs it */
-  inline bool CreateDirectories(const path &p) {
+  inline bool CreateDirectories(const path &p) const {
     return FileLoadSystem::CreateDirectories(p, m_error);
   }
 
@@ -109,6 +109,10 @@ public:
   /* Copy is not allowed because it doesn't make sense */
   FileLoadSystemHandler(const FileLoadSystemHandler &) = delete;
   FileLoadSystemHandler &operator=(const FileLoadSystemHandler &) = delete;
+
+  const error_status& GetErrorStatus() const {
+    return m_error;
+  }
 
 private:
   /* Error code to avoid exceptions */
