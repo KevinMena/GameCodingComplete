@@ -52,9 +52,7 @@ inline std::uintmax_t FileSize(const path &p, error_status &error) {
 }
 
 /* Get Directory for Temp Files. It should not fail on common filesystems */
-inline path GetTempDirectory(error_status &error) {
-  return std::filesystem::temp_directory_path(error);
-}
+const path &GetTempDirectory();
 
 /* Get Current Directory Path. Warning: This is NOT where the executable is */
 const path &GetCurrentDirectory();
@@ -64,6 +62,11 @@ const path &GetExecutableDirectory();
 
 /* Get Executable Name Path. */
 const path &GetExecutableName();
+
+/* Create Directories recursively for every element of path p that needs it  */
+inline bool CreateDirectories(const path& p, error_status &error) {
+  return std::filesystem::create_directories(p, error);
+}
 
 /* Sets up the File Load System. Must be called before any File Operation */
 error_status SetupFileLoadSystem();
@@ -89,12 +92,6 @@ public:
   /* If a File Size. Not thread safe */
   inline std::uintmax_t FileSize(const path &p) {
     return FileLoadSystem::FileSize(p, m_error);
-  }
-
-  /* Get Directory for Temp Files. It should not fail on common filesystems. Not
-   * thread safe */
-  inline path GetTempDirectory() {
-    return FileLoadSystem::GetTempDirectory(m_error);
   }
 
   /* Default Constructor and Destructor */

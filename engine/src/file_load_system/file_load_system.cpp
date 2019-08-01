@@ -24,6 +24,11 @@
 
 namespace FileLoadSystem {
 
+/* Temporary Path */
+path kTempPath;
+
+const path &GetTempDirectory() { return kTempPath; }
+
 /* Current Path */
 path kCurrentPath;
 
@@ -41,6 +46,12 @@ const path &GetExecutableDirectory() { return kExecutablePath; }
 error_status SetupFileLoadSystem() {
   error_status error;
   kCurrentPath = std::filesystem::current_path(error);
+
+  if (error) {
+    return error;
+  }
+
+  kTempPath = std::filesystem::temp_directory_path(error);
 
   if (error) {
     return error;

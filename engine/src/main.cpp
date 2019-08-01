@@ -61,6 +61,8 @@ int main(int argc, char **argv) {
 
   std::cout << FileLoadSystem::GetExecutableDirectory().generic_u8string() << std::endl;
 
+  std::cout << FileLoadSystem::GetTempDirectory().generic_u8string() << std::endl;
+
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);
 
