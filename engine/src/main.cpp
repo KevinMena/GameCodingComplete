@@ -10,6 +10,7 @@
 #include "test/class_test.hpp"
 #include "utils/stopwatch.hpp"
 #include "file_load_system/file_load_system.hpp"
+#include "file_load_system/smart_file.hpp"
 
 int main(int argc, char **argv) {
 
@@ -67,6 +68,10 @@ int main(int argc, char **argv) {
 
   FileLoadSystem::path testPath = handler.CreatePath("a/b/c");
   handler.CreateDirectories(FileLoadSystem::GetExecutableDirectory() / testPath);
+
+  FileLoadSystem::SmartReadFile testFile;
+
+  std::cout << "Size: " << sizeof(testFile) << " VS " << sizeof(std::FILE *)<< std::endl;
 
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);
