@@ -48,7 +48,7 @@ public:
   inline bool IsValid() const { return m_file != nullptr; }
 
 private:
-  std::FILE *m_file;
+  std::FILE *m_file = nullptr;
 };
 
 /* RAII Clas for FILEs that are read */
@@ -90,7 +90,7 @@ public:
   inline bool IsValid() const { return m_file != nullptr; }
 
 private:
-  std::FILE *m_file;
+  std::FILE *m_file = nullptr;
 };
 
 } // namespace FileLoadSystem
