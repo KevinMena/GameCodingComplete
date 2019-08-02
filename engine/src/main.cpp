@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 
+#include "file_load_system/file_load_system.hpp"
+#include "file_load_system/smart_file.hpp"
 #include "locale_handling/locale_handling.hpp"
 #include "serialization/json_serializer.hpp"
 #include "serialization/serializer.hpp"
 #include "test/class_test.hpp"
 #include "utils/stopwatch.hpp"
-#include "file_load_system/file_load_system.hpp"
-#include "file_load_system/smart_file.hpp"
 
 int main(int argc, char **argv) {
 
@@ -25,8 +25,10 @@ int main(int argc, char **argv) {
   fs2.open("test2.txt",
            std::fstream::in | std::fstream::out | std::fstream::app);
 
-  ss << fs.rdbuf() << u8"\n\u0148angara\n\u0148o\u0148o" << '\0';
-  fs2 << ss.str();
+  ss << fs.rdbuf();
+  ss << u8"\n\u0148angara\n\u0148o\u0148o" << '\0';
+  std::string utf8String = ss.str();
+  fs2 << utf8String;
 
   {
     std::string testStr(u8"0 ñuuuuum 1\n2 cámara 3");
@@ -56,22 +58,51 @@ int main(int argc, char **argv) {
   fs.close();
   fs2.close();
 
-  printf("%s\n", ss.str().c_str());
+  printf("%s\n", utf8String.c_str());
 
-  std::cout << FileLoadSystem::GetCurrentDirectory().generic_u8string() << std::endl;
+  std::cout << FileLoadSystem::GetCurrentDirectory().generic_u8string()
+            << std::endl;
 
-  std::cout << FileLoadSystem::GetExecutableDirectory().generic_u8string() << std::endl;
+  std::cout << FileLoadSystem::GetExecutableDirectory().generic_u8string()
+            << std::endl;
 
-  std::cout << FileLoadSystem::GetTempDirectory().generic_u8string() << std::endl;
+  std::cout << FileLoadSystem::GetTempDirectory().generic_u8string()
+            << std::endl;
+
+  {
+    FileLoadSystem::path testPath = FileLoadSystem::GetExecutableDirectory() /
+                                    FileLoadSystem::CreatePath("prueba.txt");
+
+    FileLoadSystem::SmartWriteFile f = FileLoadSystem::OpenWriteText(testPath);
+
+    if (f.IsValid()) {
+
+      if (FileLoadSystem::Fwrite(utf8String.c_str(), sizeof(char),
+                                 utf8String.length(),
+                                 f.Get()) != utf8String.length()) {
+        std::cout << "Error Writting to File " << testPath.generic_u8string()
+                  << std::endl;
+      } else {
+        std::cout << "Successful Writting to File "
+                  << testPath.generic_u8string() << std::endl;
+        std::cout << "It Contains " << utf8String << std::endl;
+      }
+
+    } else {
+      std::cout << "Invalid File " << testPath.generic_u8string() << std::endl;
+    }
+  }
 
   FileLoadSystem::FileLoadSystemHandler handler;
 
   FileLoadSystem::path testPath = handler.CreatePath("a/b/c");
-  handler.CreateDirectories(FileLoadSystem::GetExecutableDirectory() / testPath);
+  handler.CreateDirectories(FileLoadSystem::GetExecutableDirectory() /
+                            testPath);
 
   FileLoadSystem::SmartReadFile testFile;
 
-  std::cout << "Size: " << sizeof(testFile) << " VS " << sizeof(std::FILE *)<< std::endl;
+  std::cout << "Size: " << sizeof(testFile) << " VS " << sizeof(std::FILE *)
+            << std::endl;
 
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);

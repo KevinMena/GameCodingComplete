@@ -2,11 +2,16 @@
 #ifndef FILE_LOAD_SYSTEM_HPP
 #define FILE_LOAD_SYSTEM_HPP 1
 
+#include "file_load_system/smart_file.hpp"
 #include "os_detection/os_detection.hpp"
 
-#ifdef IS_WIN
+#if IS_WIN
 #include "os_detection/windows.hpp"
 #endif // IS_WIN
+
+#if IS_LINUX
+#include <sys/types.h>
+#endif // IS_LINUX
 
 #include <cstdint>
 #include <filesystem>
@@ -85,6 +90,101 @@ inline void CopyRecursive(const path &from, const path &to,
 /* Moves or renames a File or a Directory */
 inline void Rename(const path &from, const path &to, error_status &error) {
   return std::filesystem::rename(from, to, error);
+}
+
+/* ftell for Large Files */
+inline std::uintmax_t FTell(std::FILE *f) {
+
+#if IS_WIN
+  return static_cast<std::uintmax_t>(_ftelli64(f));
+// IS_WIN
+#elif IS_LINUX
+  return static_cast<std::uintmax_t>(ftello(f));
+// IS_LINUX
+#else
+#error Platform Not Supported Yet
+#endif // else
+}
+
+/* Seek Set as a constant */
+constexpr int kSeekSet = SEEK_SET;
+
+/* Seek Cur as a constant */
+constexpr int kSeekCur = SEEK_CUR;
+
+/* Seek Cur as a constant */
+constexpr int kSeekEnd = SEEK_END;
+
+/* fseek for Large Files */
+inline int FSeek(std::FILE *f, std::uintmax_t offset, int origin) {
+
+#if IS_WIN
+  return _fseeki64(f, static_cast<__int64>(offset), origin);
+// IS_WIN
+#elif IS_LINUX
+  return fseeko(f, static_cast<off_t>(offset), origin);
+// IS_LINUX
+#else
+#error Platform Not Supported Yet
+#endif // else
+}
+
+/* Open a Binary File for Read */
+SmartReadFile OpenReadBinary(const path &p);
+
+/* Open a Text File for Read */
+SmartReadFile OpenReadText(const path &p);
+
+/* Open a Binary File for Write */
+SmartWriteFile OpenWriteBinary(const path &p);
+
+/* Open a Text File for Write */
+SmartWriteFile OpenWriteText(const path &p);
+
+/* Open a Binary File for Append */
+SmartWriteFile OpenAppendBinary(const path &p);
+
+/* Open a Text File for Append */
+SmartWriteFile OpenAppendText(const path &p);
+
+/* Open a Binary File for Append */
+SmartWriteFile OpenReadAppendBinary(const path &p);
+
+/* Open a Text File for Append */
+SmartWriteFile OpenReadAppendText(const path &p);
+
+/* If the file reached EOF */
+inline bool Feof(std::FILE *f) { return std::feof(f) != 0; }
+
+/* IF there is an error on the File processing */
+inline bool Ferror(std::FILE *f) { return std::ferror(f) != 0; }
+
+/*
+  Reads an array of count elements, each one with a size of size bytes, from the
+  stream and stores them in the block of memory specified by ptr.
+
+  The position indicator of the stream is advanced by the total amount of bytes
+  read.
+
+  The total amount of bytes read if successful is (size*count).
+ */
+inline size_t Fread(void *ptr, size_t size, size_t count, FILE *stream) {
+  return std::fread(ptr, size, count, stream);
+}
+
+/*
+  Writes an array of count elements, each one with a size of size bytes, from
+  the block of memory pointed by ptr to the current position in the stream.
+
+  The position indicator of the stream is advanced by the total number of bytes
+  written.
+
+  Internally, the function interprets the block pointed by ptr as if it was an
+  array of (size*count) elements of type unsigned char, and writes them
+  sequentially to stream as if fputc was called for each byte.
+*/
+inline size_t Fwrite(const void *ptr, size_t size, size_t count, FILE *stream) {
+  return std::fwrite(ptr, size, count, stream);
 }
 
 /* Get Directory for Temp Files. It should not fail on common filesystems */
