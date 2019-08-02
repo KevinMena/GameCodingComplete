@@ -6,7 +6,7 @@
 
 namespace FileLoadSystem {
 
-/* RAII Clas for FILEs that are written */
+/* RAII Class for FILEs that are written */
 class SmartWriteFile {
 public:
   SmartWriteFile() { m_file = nullptr; }
@@ -51,7 +51,7 @@ private:
   std::FILE *m_file = nullptr;
 };
 
-/* RAII Clas for FILEs that are read */
+/* RAII Class for FILEs that are read */
 class SmartReadFile {
 public:
   SmartReadFile() { m_file = nullptr; }
