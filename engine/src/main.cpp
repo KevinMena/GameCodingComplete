@@ -1,7 +1,10 @@
+#include <chrono>
 #include <cstdio>
 #include <fstream>
+#include <future>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "file_load_system/file_load_system.hpp"
@@ -103,6 +106,51 @@ int main(int argc, char **argv) {
 
   std::cout << "Size: " << sizeof(testFile) << " VS " << sizeof(std::FILE *)
             << std::endl;
+
+  {
+    // Thread Example
+    std::future<std::unique_ptr<char[]>> future =
+        std::async(std::launch::async, []() {
+          FileLoadSystem::FileLoadSystemHandler fsHandler;
+          FileLoadSystem::path p = FileLoadSystem::GetExecutableDirectory() /
+                                   fsHandler.CreatePath("prueba.txt");
+
+          std::uintmax_t size = fsHandler.FileSize(p);
+
+          std::unique_ptr<char[]> res(
+              static_cast<char *>(std::malloc(size * sizeof(char) + 1)));
+
+          FileLoadSystem::SmartReadFile file = FileLoadSystem::OpenReadText(p);
+
+          if (!file.IsValid()) {
+            return std::unique_ptr<char[]>();
+          }
+
+          FileLoadSystem::Fread(res.get(), sizeof(char), size, file.Get());
+
+          std::cout << "Waiting for file..." << std::endl;
+          std::this_thread::sleep_for(std::chrono::seconds(10));
+
+          return res;
+        });
+
+    std::cout << "waiting...\n";
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::cout << "waiting x2...\n";
+    std::future_status status;
+    do {
+      status = future.wait_for(std::chrono::seconds(1));
+      if (status == std::future_status::deferred) {
+        std::cout << "deferred\n";
+      } else if (status == std::future_status::timeout) {
+        std::cout << "timeout\n";
+      } else if (status == std::future_status::ready) {
+        std::cout << "ready!\n";
+      }
+    } while (status != std::future_status::ready);
+
+    std::cout << "result is " << future.get().get() << '\n';
+  }
 
   printf("I'm here: %s\n", argv[0]);
   printf("I have %d arguments\n", argc);
