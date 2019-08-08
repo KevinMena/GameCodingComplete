@@ -249,8 +249,9 @@ public:
     zero if p did not exist to begin with). The overload that takes error_code&
     argument returns static_cast<std::uintmax_t>(-1) on error
   */
-  inline  RemoveDirectory(const path &p) {
-    return FileLoadSystem::RemoveDirectory(p, m_error);
+  inline file_size_t RemoveDirectory(const path &p) {
+    return static_cast<file_size_t>(
+        FileLoadSystem::RemoveDirectory(p, m_error));
   }
 
   /* Copies a File or a Directory (Non Recursively) */
