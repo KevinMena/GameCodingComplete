@@ -29,10 +29,14 @@ namespace FileLoadSystem {
 /* Path Representation */
 using path = typename std::filesystem::path;
 
+/* Error Representation */
 using error_status = std::error_code;
 
+/* File Size Representation */
+using file_size_t = std::uintmax_t;
+
 /* Size Error Constant. Check for this or you are going to blow up the memory */
-constexpr std::uintmax_t kSizeError = static_cast<std::uintmax_t>(-1);
+constexpr file_size_t kSizeError = static_cast<file_size_t>(-1);
 
 /*
   Create a filesystem path from an utf8 source.
@@ -51,7 +55,7 @@ inline bool Exists(const path &p, error_status &error) {
 }
 
 /* Get File Size */
-inline std::uintmax_t FileSize(const path &p, error_status &error) {
+inline file_size_t FileSize(const path &p, error_status &error) {
   return std::filesystem::file_size(p, error);
 }
 
@@ -71,7 +75,7 @@ inline bool Remove(const path &p, error_status &error) {
   zero if p did not exist to begin with). The overload that takes error_code&
   argument returns static_cast<std::uintmax_t>(-1) on error
 */
-inline std::uintmax_t RemoveDirectory(const path &p, error_status &error) {
+inline file_size_t RemoveDirectory(const path &p, error_status &error) {
   return std::filesystem::remove_all(p, error);
 }
 
@@ -93,13 +97,13 @@ inline void Rename(const path &from, const path &to, error_status &error) {
 }
 
 /* ftell for Large Files */
-inline std::uintmax_t FTell(std::FILE *f) {
+inline file_size_t FTell(std::FILE *f) {
 
 #if IS_WIN
-  return static_cast<std::uintmax_t>(_ftelli64(f));
+  return static_cast<file_size_t>(_ftelli64(f));
 // IS_WIN
 #elif IS_LINUX
-  return static_cast<std::uintmax_t>(ftello(f));
+  return static_cast<file_size_t>(ftello(f));
 // IS_LINUX
 #else
 #error Platform Not Supported Yet
@@ -116,7 +120,7 @@ constexpr int kSeekCur = SEEK_CUR;
 constexpr int kSeekEnd = SEEK_END;
 
 /* fseek for Large Files */
-inline int FSeek(std::FILE *f, std::uintmax_t offset, int origin) {
+inline int FSeek(std::FILE *f, file_size_t offset, int origin) {
 
 #if IS_WIN
   return _fseeki64(f, static_cast<__int64>(offset), origin);
@@ -225,7 +229,7 @@ public:
   }
 
   /* If a File Size. Not thread safe */
-  inline std::uintmax_t FileSize(const path &p) const {
+  inline file_size_t FileSize(const path &p) const {
     return FileLoadSystem::FileSize(p, m_error);
   }
 
@@ -245,7 +249,7 @@ public:
     zero if p did not exist to begin with). The overload that takes error_code&
     argument returns static_cast<std::uintmax_t>(-1) on error
   */
-  inline std::uintmax_t RemoveDirectory(const path &p) {
+  inline  RemoveDirectory(const path &p) {
     return FileLoadSystem::RemoveDirectory(p, m_error);
   }
 
