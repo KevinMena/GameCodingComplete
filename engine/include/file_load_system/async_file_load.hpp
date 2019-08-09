@@ -11,7 +11,7 @@
 namespace FileLoadSystem {
 
 /*
-  Reads a File Completely using a thread and saves the result to the passed
+  Reads size bytes of a File using a thread and saves the result to the passed
   pointer
 */
 std::future<std::unique_ptr<char[]>> ReadFile(const FileLoadSystem::path &p,
