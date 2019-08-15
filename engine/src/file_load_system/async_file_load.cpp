@@ -3,52 +3,58 @@
 #include "file_load_system/file_load_system.hpp"
 #include "file_load_system/smart_file.hpp"
 
+#include <utility>
 
 namespace FileLoadSystem {
 
 /*
   Reads a File Completely and saves the result to the passed pointer
 */
-std::unique_ptr<char[]> InternalReadFile(const FileLoadSystem::path &p,
-                                         file_size_t size,
-                                         std::unique_ptr<char[]> ptr) {
+FileAndData InternalReadFile(const FileLoadSystem::path &p, file_size_t size,
+                             std::unique_ptr<char[]> ptr) {
   FileLoadSystem::SmartReadFile file = FileLoadSystem::OpenReadText(p);
 
-  if (!file.IsValid()) {
-    return std::unique_ptr<char[]>();
+  FileAndData res;
+  res.m_file = std::move(file);
+  res.m_data = std::move(ptr);
+
+  if (!res.m_file.IsValid()) {
+    res.m_error = true;
+    return res;
   }
 
-  FileLoadSystem::Fread(ptr.get(), sizeof(char), size, file.Get());
+  FileLoadSystem::Fread(res.m_data.get(), sizeof(char), size, res.m_file.Get());
 
-  return ptr;
+  return res;
 }
 
 /*
   Reads a File Completely and allocates memory to load it
 */
-std::unique_ptr<char[]> InternalReadFileAlloc(const FileLoadSystem::path &p) {
+FileAndData InternalReadFileAlloc(const FileLoadSystem::path &p) {
   FileLoadSystem::error_status err;
   file_size_t size = FileLoadSystem::FileSize(p, err);
 
   if (err) {
-    return std::unique_ptr<char[]>();
+    FileAndData res;
+    res.m_error = true;
+    return res;
   }
 
-  std::unique_ptr<char[]> res(
+  std::unique_ptr<char[]> data(
       static_cast<char *>(std::malloc(size * sizeof(char) + 1)));
 
-  return InternalReadFile(p, size, std::move(res));
+  return InternalReadFile(p, size, std::move(data));
 }
 
-std::future<std::unique_ptr<char[]>> ReadFile(const FileLoadSystem::path &p,
-                                              file_size_t size,
-                                              std::unique_ptr<char[]> ptr) {
+std::future<FileAndData> ReadFile(const FileLoadSystem::path &p,
+                                  file_size_t size,
+                                  std::unique_ptr<char[]> ptr) {
   return std::async(std::launch::async, InternalReadFile, p, size,
                     std::move(ptr));
 }
 
-std::future<std::unique_ptr<char[]>>
-ReadFileWithAlloc(const FileLoadSystem::path &p) {
+std::future<FileAndData> ReadFileWithAlloc(const FileLoadSystem::path &p) {
   return std::async(std::launch::async, InternalReadFileAlloc, p);
 }
 

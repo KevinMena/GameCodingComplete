@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
                              fsHandler.CreatePath("prueba.txt");
 
     // Thread Example
-    std::future<std::unique_ptr<char[]>> future =
+    std::future<FileLoadSystem::FileAndData> future =
         FileLoadSystem::ReadFileWithAlloc(p);
 
     std::cout << "waiting...\n";
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
       }
     } while (status != std::future_status::ready);
 
-    std::cout << "result is " << future.get().get() << '\n';
+    std::cout << "result is " << future.get().m_data.get() << '\n';
   }
 
   printf("I'm here: %s\n", argv[0]);

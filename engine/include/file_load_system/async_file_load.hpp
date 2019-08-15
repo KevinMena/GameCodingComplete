@@ -10,19 +10,28 @@
 /* File Load and Writing System */
 namespace FileLoadSystem {
 
+/* Return a File, the Data requested and if there was an error */
+using FileAndData = struct {
+  FileLoadSystem::SmartReadFile m_file;
+  std::unique_ptr<char[]> m_data;
+  bool m_error = false;
+
+  /* If the operation succeded */
+  explicit operator bool() const { return !m_error; }
+};
+
 /*
   Reads size bytes of a File using a thread and saves the result to the passed
   pointer
 */
-std::future<std::unique_ptr<char[]>> ReadFile(const FileLoadSystem::path &p,
-                                              FileLoadSystem::file_size_t size,
-                                              std::unique_ptr<char[]> ptr);
+std::future<FileAndData> ReadFile(const FileLoadSystem::path &p,
+                                  FileLoadSystem::file_size_t size,
+                                  std::unique_ptr<char[]> ptr);
 
 /*
-  Reads a File Completely using a thread and allocates memory to load it
+  Reads a File Completely using a thread. Allocates memory to load it
 */
-std::future<std::unique_ptr<char[]>>
-ReadFileWithAlloc(const FileLoadSystem::path &p);
+std::future<FileAndData> ReadFileWithAlloc(const FileLoadSystem::path &p);
 
 } // namespace FileLoadSystem
 
