@@ -24,6 +24,14 @@ using FileAndData = struct {
   Reads size bytes of a File using a thread and saves the result to the passed
   pointer
 */
+std::future<FileAndData> ReadFile(FileLoadSystem::SmartReadFile file,
+                                  FileLoadSystem::file_size_t size,
+                                  std::unique_ptr<char[]> ptr);
+
+/*
+  Reads size bytes of a File using a thread and saves the result to the passed
+  pointer
+*/
 std::future<FileAndData> ReadFile(const FileLoadSystem::path &p,
                                   FileLoadSystem::file_size_t size,
                                   std::unique_ptr<char[]> ptr);
