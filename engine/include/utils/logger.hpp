@@ -23,7 +23,9 @@ public:
   Logger(const Logger &) = delete;
   Logger &operator=(Logger &&) = default;
   Logger &operator=(const Logger &) = delete;
-  ~Logger() = default;
+  ~Logger() {
+    Log(__FILE__, __LINE__, 0, "Closed Log");
+  }
 
   /* Get Logger Level */
   inline int GetLevel() const {
