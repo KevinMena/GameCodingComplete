@@ -15,6 +15,7 @@
 #include "serialization/serializer.hpp"
 #include "test/class_test.hpp"
 #include "utils/stopwatch.hpp"
+#include "utils/logger.hpp"
 
 int main(int argc, char **argv) {
 
