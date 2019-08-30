@@ -131,7 +131,6 @@ std::shared_ptr<Logger> Logger::ConnectLogger(std::string name,
 }
 
 bool Logger::SetupLogging(const FileLoadSystem::path &commomPath) {
-  std::lock_guard<std::mutex> guard(s_mutex);
   CommonSetupLogging(commomPath);
 
   s_defaultLogger = CreateLogger(s_kDefaultLoggerName, stdout);
@@ -148,7 +147,6 @@ bool Logger::SetupLogging(const FileLoadSystem::path &commomPath) {
 
 bool Logger::SetupLogging(const FileLoadSystem::path &commomPath,
                           std::FILE *default, std::FILE *defaultError) {
-  std::lock_guard<std::mutex> guard(s_mutex);
   CommonSetupLogging(commomPath);
 
   s_defaultLogger = CreateLogger(s_kDefaultLoggerName, default);
@@ -167,7 +165,6 @@ bool Logger::SetupLogging(
     const FileLoadSystem::path &commomPath,
     std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
     std::FILE *defaultError) {
-  std::lock_guard<std::mutex> guard(s_mutex);
   CommonSetupLogging(commomPath);
 
   s_defaultLogger = CreateLogger(s_kDefaultLoggerName, default);
@@ -185,7 +182,6 @@ bool Logger::SetupLogging(
 bool Logger::SetupLogging(
     const FileLoadSystem::path &commomPath, std::FILE *default,
     std::shared_ptr<FileLoadSystem::SmartWriteFile> defaultError) {
-  std::lock_guard<std::mutex> guard(s_mutex);
   CommonSetupLogging(commomPath);
 
   s_defaultLogger = CreateLogger(s_kDefaultLoggerName, default);
@@ -204,7 +200,6 @@ bool Logger::SetupLogging(
     const FileLoadSystem::path &commomPath,
     std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
     std::shared_ptr<FileLoadSystem::SmartWriteFile> defaultError) {
-  std::lock_guard<std::mutex> guard(s_mutex);
   CommonSetupLogging(commomPath);
 
   s_defaultLogger = CreateLogger(s_kDefaultLoggerName, default);
