@@ -55,6 +55,22 @@ public:
   void Log(const char *originFile, int line, int level, const char *fmt,
            ...) const;
 
+  /* Change Logger associated File */
+  inline void ChangeFile(std::shared_ptr<FileLoadSystem::SmartWriteFile> file) {
+    std::lock_guard<std::mutex> guard(m_mutex);
+    m_protectedFile = std::move(file);
+    m_file = m_protectedFile.get()->Get();
+  }
+
+  /* Change Logger associated File */
+  inline void ChangeFile(std::FILE *file) {
+    std::lock_guard<std::mutex> guard(m_mutex);
+    m_protectedFile.reset();
+    m_file = file;
+  }
+
+  /* Logging System */
+
   /* Get a Logger with a name */
   static std::shared_ptr<Logger> GetLogger(const std::string &name);
 
@@ -108,10 +124,32 @@ public:
                std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> defaultError);
 
+  /* End the Logging System. All the loggers are still valid but its UB to
+   * register or ask for another */
   inline static void FinishLogging() {
     std::lock_guard<std::mutex> guard(s_mutex);
     s_loggerDB.clear();
     s_systemActive = false;
+  }
+
+  /* Get Default Logger */
+  inline static std::shared_ptr<Logger> GetDefaultLogger() {
+    return s_defaultLogger;
+  }
+
+  /* Get Default Error Logger */
+  inline static std::shared_ptr<Logger> GetDefaultErrorLogger() {
+    return s_defaultErrorLogger;
+  }
+
+  /* Get Default Logger Name*/
+  inline static const std::string &GetDefaultLoggerName() {
+    return s_kDefaultLoggerName;
+  }
+
+  /* Get Default Error Logger Name*/
+  inline static const std::string &GetDefaultErrorLoggerName() {
+    return s_kDefaultErrorLoggerName;
   }
 
 private:
