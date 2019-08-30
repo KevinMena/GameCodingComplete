@@ -158,20 +158,22 @@ public:
   }
 
 private:
-  /* Init Logger with associated File and Level */
+  /* Init Logger with associated File and Level. Must be done before any call to
+   * the logger */
   inline void Init(std::shared_ptr<FileLoadSystem::SmartWriteFile> file,
                    int level = -1) {
-    std::lock_guard<std::mutex> guard(m_mutex);
     m_protectedFile = std::move(file);
     m_file = m_protectedFile.get()->Get();
     m_level = level;
+    Log(__FILE__, __LINE__, 0, "Logger Started");
   }
 
-  /* Init Logger with associated File (Non protected) and Level */
+  /* Init Logger with associated File (Non protected) and Level. Must be done
+   * before any call to the logger */
   inline void Init(std::FILE *file, int level = -1) {
-    std::lock_guard<std::mutex> guard(m_mutex);
     m_file = file;
     m_level = level;
+    Log(__FILE__, __LINE__, 0, "Logger Started");
   }
 
   /* Logging level */
@@ -221,6 +223,9 @@ private:
   /* Default Error Logger */
   static std::shared_ptr<Logger> s_defaultErrorLogger;
 };
+
+/* Log something */
+#define LOG(logger, level, msg, ...) logger->Log(__FILE__, __LINE__, level, msg, __VA_ARGS__)
 
 } // namespace Logging
 

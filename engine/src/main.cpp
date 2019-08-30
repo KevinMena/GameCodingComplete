@@ -21,6 +21,9 @@ int main(int argc, char **argv) {
 
   LocaleHandling::SetStartupLocale();
   FileLoadSystem::SetupFileLoadSystem("KC", "Da Game");
+  Logging::Logger::SetupLogging(FileLoadSystem::GetTempDirectory());
+
+  LOG(Logging::Logger::GetDefaultLogger(), 0, u8"0 ñuuuuum 1\n2 cámara 3");
 
   std::fstream fs, fs2;
   std::string s;
