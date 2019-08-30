@@ -23,9 +23,7 @@ public:
   Logger(const Logger &) = delete;
   Logger &operator=(Logger &&) = default;
   Logger &operator=(const Logger &) = delete;
-  ~Logger() {
-    Log(__FILE__, __LINE__, 0, "Closed Log");
-  }
+  ~Logger() { Log(__FILE__, __LINE__, 0, "Closed Log"); }
 
   /* Get Logger Level */
   inline int GetLevel() const {
@@ -98,29 +96,34 @@ public:
                                                std::shared_ptr<Logger> logger);
 
   /* Setup Logging system using commonPath as the folder to save logs. Default
-   * logger goes to stdout and Default Error Logger goes to stderr */
+   * logger goes to stdout and Default Error Logger goes to stderr. MUST BE
+   * CALLED BEFORE ANY OTHER CALL TO THE SYSTEM */
   static bool SetupLogging(const FileLoadSystem::path &commomPath);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
-   * specific file for default logger and error logger */
+   * specific file for default logger and error logger. MUST BE CALLED BEFORE
+   * ANY OTHER CALL TO THE SYSTEM */
   static bool SetupLogging(const FileLoadSystem::path &commomPath,
                            std::FILE *default, std::FILE *defaultError);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
-   * specific file for default logger and error logger */
+   * specific file for default logger and error logger. MUST BE CALLED BEFORE
+   * ANY OTHER CALL TO THE SYSTEM */
   static bool
   SetupLogging(const FileLoadSystem::path &commomPath,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
                std::FILE *defaultError);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
-   * specific file for default logger and error logger */
+   * specific file for default logger and error logger. MUST BE CALLED BEFORE
+   * ANY OTHER CALL TO THE SYSTEM */
   static bool
   SetupLogging(const FileLoadSystem::path &commomPath, std::FILE *default,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> defaultError);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
-   * specific file for default logger and error logger */
+   * specific file for default logger and error logger. MUST BE CALLED BEFORE
+   * ANY OTHER CALL TO THE SYSTEM */
   static bool
   SetupLogging(const FileLoadSystem::path &commomPath,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
