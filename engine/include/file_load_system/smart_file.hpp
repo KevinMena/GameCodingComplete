@@ -47,6 +47,14 @@ public:
   /* If the File pointer is valid */
   inline bool IsValid() const { return m_file != nullptr; }
 
+  /* Releases Ownership of file without closing it and points to nullptr */
+  inline void Reset() {
+    if (m_file != nullptr) {
+      std::fflush(m_file);
+    }
+    m_file = nullptr;
+  }
+
 private:
   std::FILE *m_file = nullptr;
 };
@@ -88,6 +96,9 @@ public:
 
   /* If the File pointer is valid */
   inline bool IsValid() const { return m_file != nullptr; }
+
+  /* Releases Ownership of file without closing it and points to nullptr */
+  inline void Reset() { m_file = nullptr; }
 
 private:
   std::FILE *m_file = nullptr;
