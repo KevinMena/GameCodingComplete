@@ -23,7 +23,7 @@ void Logger::Log(const char *originFile, int line, int level, const char *fmt,
     std::fprintf(m_file, "Failed_Time %s:%d (%d): ", originFile, line, level);
   } else {
     char buf[32];
-    buf[strftime(buf, sizeof(buf), "%H:%M:%S", &lt)] = '\0';
+    buf[strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", &lt)] = '\0';
     std::fprintf(m_file, "%s %s:%d (%d): ", buf, originFile, line, level);
   }
 
