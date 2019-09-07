@@ -97,18 +97,18 @@ public:
 
   /* Setup Logging system using commonPath as the folder to save logs. Default
    * logger goes to stdout and Default Error Logger goes to stderr. MUST BE
-   * CALLED BEFORE ANY OTHER CALL TO THE SYSTEM */
+   * CALLED BEFORE ANY OTHER CALL TO THE SYSTEM. Returns true if successful */
   static bool SetupLogging(const FileLoadSystem::path &commomPath);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
    * specific file for default logger and error logger. MUST BE CALLED BEFORE
-   * ANY OTHER CALL TO THE SYSTEM */
+   * ANY OTHER CALL TO THE SYSTEM. Returns true if successful */
   static bool SetupLogging(const FileLoadSystem::path &commomPath,
                            std::FILE *default, std::FILE *defaultError);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
    * specific file for default logger and error logger. MUST BE CALLED BEFORE
-   * ANY OTHER CALL TO THE SYSTEM */
+   * ANY OTHER CALL TO THE SYSTEM. Returns true if successful */
   static bool
   SetupLogging(const FileLoadSystem::path &commomPath,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
@@ -116,14 +116,14 @@ public:
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
    * specific file for default logger and error logger. MUST BE CALLED BEFORE
-   * ANY OTHER CALL TO THE SYSTEM */
+   * ANY OTHER CALL TO THE SYSTEM. Returns true if successful */
   static bool
   SetupLogging(const FileLoadSystem::path &commomPath, std::FILE *default,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> defaultError);
 
   /* Setup Logging system using commonPath as the folder to save logs. Setup the
    * specific file for default logger and error logger. MUST BE CALLED BEFORE
-   * ANY OTHER CALL TO THE SYSTEM */
+   * ANY OTHER CALL TO THE SYSTEM. Returns true if successful */
   static bool
   SetupLogging(const FileLoadSystem::path &commomPath,
                std::shared_ptr<FileLoadSystem::SmartWriteFile> default,
@@ -225,7 +225,8 @@ private:
 };
 
 /* Log something */
-#define LOG(logger, level, msg, ...) logger->Log(__FILE__, __LINE__, level, msg, __VA_ARGS__)
+#define LOG(logger, level, msg, ...)                                           \
+  logger->Log(__FILE__, __LINE__, level, msg, __VA_ARGS__)
 
 } // namespace Logging
 
