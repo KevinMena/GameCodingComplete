@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 
+#include "engine/engine.hpp"
 #include "file_load_system/async_file_load.hpp"
 #include "file_load_system/file_load_system.hpp"
 #include "file_load_system/smart_file.hpp"
@@ -14,14 +15,16 @@
 #include "serialization/json_serializer.hpp"
 #include "serialization/serializer.hpp"
 #include "test/class_test.hpp"
-#include "utils/stopwatch.hpp"
 #include "utils/logger.hpp"
+#include "utils/stopwatch.hpp"
 
 int main(int argc, char **argv) {
 
-  LocaleHandling::SetStartupLocale();
-  FileLoadSystem::SetupFileLoadSystem("KC", "Da Game");
-  Logging::Logger::SetupLogging(FileLoadSystem::GetTempDirectory());
+  Engine::Engine engine;
+
+  if (!engine.Init("KC", "Da Game")) {
+    return 1;
+  }
 
   LOG(Logging::Logger::GetDefaultLogger(), 0, u8"0 ñuuuuum 1\n2 cámara 3");
 
