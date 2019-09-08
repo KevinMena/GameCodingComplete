@@ -17,6 +17,7 @@
 #include "test/class_test.hpp"
 #include "utils/logger.hpp"
 #include "utils/stopwatch.hpp"
+#include "utils/engine_assert.hpp"
 
 int main(int argc, char **argv) {
 
@@ -209,6 +210,8 @@ int main(int argc, char **argv) {
   printf("%s\n", resp);
 
   delete[] resp;
+
+  //DEBUG_ASSERT(1 + 1 == 3, debug_assert::engine_module{}); // basic
 
   return 0;
 }

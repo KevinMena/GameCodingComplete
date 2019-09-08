@@ -92,24 +92,24 @@ set(DEBUG_ASSERT ${EXTERNAL_DOWNLOAD_LOCATION}/DEBUG_ASSERT)
 set(DEBUG_ASSERT_DOWNLOAD ${DEBUG_ASSERT}/debug-assert-download)
 set(DEBUG_ASSERT_SRC ${DEBUG_ASSERT}/debug-assert-src)
 set(DEBUG_ASSERT_BUILD ${DEBUG_ASSERT}/debug-assert-build)
-configure_file(debug_assert_config/CMakeLists.txt.in ${DEBUG_ASSERT_DOWNLOAD}/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${DEBUG_ASSERT_DOWNLOAD} )
-if(result)
-    message(FATAL_ERROR "CMake step for Debug-Assert failed: ${result}")
-endif()
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${DEBUG_ASSERT_DOWNLOAD})
-if(result)
-    message(FATAL_ERROR "Build step for Debug-Assert failed: ${result}")
-endif()
+set(DEBUG_ASSERT_INCLUDE_LOCATION ${DEBUG_ASSERT}/include)
+ExternalProject_Add(debug_assert-lib
+  GIT_REPOSITORY    https://github.com/foonathan/debug_assert.git
+  GIT_TAG           master
+  SOURCE_DIR        "${DEBUG_ASSERT_SRC}"
+  BINARY_DIR        "${DEBUG_ASSERT_BUILD}"
+  INSTALL_COMMAND   ""
+)
 
-# Add debug-assert directly to our build
-add_subdirectory(${DEBUG_ASSERT_SRC}
-                ${DEBUG_ASSERT_BUILD}
-                EXCLUDE_FROM_ALL)
+# See: https://stackoverflow.com/questions/41384447/clean-copied-files-from-external-project
+# See: https://cmake.org/cmake/help/v3.0/module/ExternalProject.html
+ExternalProject_Add_Step(
+  debug_assert-lib debug_assert-copy2include
+    COMMENT "Copying debug_assert to include folder"
+    COMMAND "${CMAKE_COMMAND}" -E copy "${DEBUG_ASSERT_SRC}/debug_assert.hpp" "${DEBUG_ASSERT_INCLUDE_LOCATION}/debug_assert.hpp"
+    # See: https://stackoverflow.com/questions/41089289/externalproject-add-step-error-add-custom-command-given-append-option-with-outpu
+    DEPENDEES download
+)
 
 # Testing
 if(${BUILD_TESTING})
@@ -203,7 +203,6 @@ target_compile_options(kch_engine PRIVATE
                            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic -Werror>
                            $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /DUNICODE=1 /D_UNICODE=1>)
 
-target_link_libraries(kch_engine debug_assert)
 
 if(${BUILD_TESTING})
     add_executable(kch_engine_test ${KCH_ENGINE_TEST_SRC} ${KCH_ENGINE_FOR_TEST_SRC})
@@ -226,6 +225,9 @@ include_directories(${ENGINE_SOURCE_FOLDER}/include)
 
 add_dependencies(kch_engine rapidjson-lib)
 include_directories(${RAPIDJSON_INCLUDE_LOCATION})
+
+add_dependencies(kch_engine debug_assert-lib)
+include_directories(${DEBUG_ASSERT_INCLUDE_LOCATION})
 
 
 install(TARGETS kch_engine
