@@ -37,11 +37,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(INSTALL_DIRECTORY ${CMAKE_BINARY_DIR}/${ENGINE_SOURCE_FOLDER})
 
-# External Libraries
-set(EXTERNAL_DOWNLOAD_LOCATION ${CMAKE_BINARY_DIR}/external)
-
 project(kch_engine)
 include(CTest)
+
+# External Libraries
+set(EXTERNAL_DOWNLOAD_LOCATION ${CMAKE_BINARY_DIR}/external)
+set(EXTERNAL_PRE_DOWNLOAD_LOCATION ${PROJECT_SOURCE_DIR}/external)
 
 # C++ Configuration
 set(CMAKE_CXX_STANDARD 17)
@@ -228,6 +229,34 @@ include_directories(${RAPIDJSON_INCLUDE_LOCATION})
 
 add_dependencies(kch_engine debug_assert-lib)
 include_directories(${DEBUG_ASSERT_INCLUDE_LOCATION})
+
+# GLEW (Only for windows for now)
+if(WIN32)
+    set(GLEW_FOLDER ${EXTERNAL_PRE_DOWNLOAD_LOCATION}/glew)
+    set(GLEW_ARCH x64)
+
+    # check if we are building for win32
+    if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+        set(GLEW_ARCH Win32)
+    endif()
+
+    set(GLEW_INCLUDE ${GLEW_FOLDER}/include)
+    set(GLEW_LIB ${GLEW_FOLDER}/lib/Release/${GLEW_ARCH})
+    set(GLEW_BIN ${GLEW_FOLDER}/bin/Release/${GLEW_ARCH})
+
+    include_directories(${GLEW_INCLUDE})
+    link_directories(${GLEW_LIB})
+
+    add_custom_command(TARGET kch_engine POST_BUILD        # Adds a post-build event to kch_engine
+    COMMENT "Copying glew dll to include folder"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
+        "${GLEW_BIN}/glew32.dll"      # <--this is in-file
+        $<TARGET_FILE_DIR:kch_engine>/glew32.dll)                 # <--this is out-file path
+
+
+else()
+    message( FATAL_ERROR "GLEW only supported for windows for now")
+endif()
 
 
 install(TARGETS kch_engine
