@@ -17,9 +17,14 @@ if (${BUILD_OFFLINE})
     message("Working offline, not pulling external projects")
 endif()
 
-# Unicode is UTF8. Accept no substitutes
-add_compile_options($<$<C_COMPILER_ID:MSVC>:/utf-8>)
-add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+# Detect 64bit Build
+# See: https://stackoverflow.com/questions/39258250/how-to-detect-if-64-bit-msvc-with-cmake
+set(USE_64 ON)
+if(NOT "${CMAKE_GENERATOR}" MATCHES "(Win64|IA64)" 
+	AND "${CMAKE_SIZEOF_VOID_P}" STREQUAL "4" 
+	AND NOT CMAKE_CL_64)
+    set(USE_64 OFF)
+endif()
 
 # Detect Multi Config Generator 
 # See: https://gitlab.kitware.com/cmake/cmake/issues/17645
@@ -112,6 +117,87 @@ ExternalProject_Add_Step(
     DEPENDEES download
 )
 
+# GLFW
+set(GLFW_LIB_NAME lib64)
+set(GLFW_LIB_SUFFIX 64)
+if(NOT USE_64)
+   set(GLFW_LIB_NAME lib)
+   set(GLFW_LIB_SUFFIX "")
+endif()
+
+set(GLFW_LOCATION ${EXTERNAL_DOWNLOAD_LOCATION}/GLFW)
+
+set(GLFW_INCLUDE_LOCATION ${GLFW_LOCATION}/include)
+set(GLFW_LIB_LOCATION ${GLFW_LOCATION}/${GLFW_LIB_NAME})
+set(GLFW_BIN_LOCATION ${GLFW_LOCATION}/bin)
+
+
+# See> https://cmake.org/cmake/help/v3.0/module/ExternalProject.html
+# See: https://stackoverflow.com/questions/38006584/how-to-clone-and-integrate-external-from-git-cmake-project-into-local-one
+# See: https://cmake.org/cmake/help/v3.0/module/ExternalProject.html
+# See: https://stackoverflow.com/questions/16842218/how-to-use-cmake-externalproject-add-or-alternatives-in-a-cross-platform-way
+# See: https://stackoverflow.com/questions/25520117/cmake-install-project-doesnt-copy-my-executable-to-the-folder-i-specify
+ExternalProject_Add (
+	  glfw-lib
+	  PREFIX ${GLFW_LOCATION}
+      GIT_REPOSITORY "https://github.com/glfw/glfw.git"
+      GIT_TAG "master"
+      CMAKE_GENERATOR ${CMAKE_GENERATOR}
+      CMAKE_GENERATOR_TOOLSET  ${CMAKE_GENERATOR_TOOLSET}
+      #UPDATE_COMMAND "" # Uncomment to stop git pull
+      INSTALL_COMMAND # See https://stackoverflow.com/questions/16842218/how-to-use-cmake-externalproject-add-or-alternatives-in-a-cross-platform-way
+        ${CMAKE_COMMAND}
+        --build .
+        --target install
+      CMAKE_ARGS 
+    	  -DCMAKE_INSTALL_PREFIX=${GLFW_LOCATION}
+        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+      	#-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        ${propagate_build_type}
+        -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+      	-DLIB_SUFFIX=${GLFW_LIB_SUFFIX} 
+      	-DBUILD_SHARED_LIBS=ON 
+      	-DGLFW_BUILD_TESTS=OFF 
+      	-DGLFW_BUILD_EXAMPLES=OFF 
+      	-DGLFW_BUILD_DOCS=ON
+      )
+
+# GLM 
+set(GLM_LOCATION ${EXTERNAL_DOWNLOAD_LOCATION}/GLM)
+set(GLM_INCLUDE_PRE_LOCATION ${GLM_LOCATION}/src/glm-lib/glm)
+set(GLM_INCLUDE_LOCATION ${GLM_LOCATION}/include)
+ExternalProject_Add (
+	  glm-lib
+	  PREFIX ${GLM_LOCATION}
+      GIT_REPOSITORY "https://github.com/g-truc/glm.git"
+      GIT_TAG "master"
+      #UPDATE_COMMAND "" # Uncomment to stop git pull
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      CMAKE_GENERATOR ${CMAKE_GENERATOR}
+      CMAKE_GENERATOR_TOOLSET  ${CMAKE_GENERATOR_TOOLSET}
+      CMAKE_ARGS 
+    	-DCMAKE_INSTALL_PREFIX=${GLM_LOCATION}
+      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+      )
+
+# See: https://stackoverflow.com/questions/41384447/clean-copied-files-from-external-project
+# See: https://cmake.org/cmake/help/v3.0/module/ExternalProject.html
+ExternalProject_Add_Step(
+    glm-lib glm-copy2include
+    COMMENT "Copying GLM to include folder"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLM_INCLUDE_PRE_LOCATION} ${GLM_INCLUDE_LOCATION}/glm
+    # See: https://stackoverflow.com/questions/41089289/externalproject-add-step-error-add-custom-command-given-append-option-with-outpu
+    DEPENDEES download
+)
+
+set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+    "${GLM_INCLUDE_LOCATION}"
+)
+
 # Testing
 if(${BUILD_TESTING})
     set(KCH_ENGINE_FOR_TEST_SRC  ${KCH_ENGINE_SRC})
@@ -197,6 +283,10 @@ endif()
 # https://www.jetbrains.com/help/clion/quick-cmake-tutorial.html
 add_executable(kch_engine ${KCH_ENGINE_SRC})
 
+# Unicode is UTF8. Accept no substitutes
+add_compile_options($<$<C_COMPILER_ID:MSVC>:/utf-8>)
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+
 # Set Warnings
 # See: https://foonathan.net/blog/2018/10/17/cmake-warnings.html
 # In case a library starts failing due to warnings, this links contains a fix
@@ -230,13 +320,19 @@ include_directories(${RAPIDJSON_INCLUDE_LOCATION})
 add_dependencies(kch_engine debug_assert-lib)
 include_directories(${DEBUG_ASSERT_INCLUDE_LOCATION})
 
+add_dependencies(kch_engine glfw-lib)
+include_directories(${GLFW_INCLUDE_LOCATION})
+
+add_dependencies(kch_engine glm-lib)
+include_directories(${GLM_INCLUDE_LOCATION})
+
 # GLEW (Only for windows for now)
 if(WIN32)
     set(GLEW_FOLDER ${EXTERNAL_PRE_DOWNLOAD_LOCATION}/glew)
     set(GLEW_ARCH x64)
 
     # check if we are building for win32
-    if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    if(USE_64)
         set(GLEW_ARCH Win32)
     endif()
 
@@ -263,3 +359,7 @@ install(TARGETS kch_engine
             RUNTIME DESTINATION ${INSTALL_DIRECTORY}/bin
             LIBRARY DESTINATION ${INSTALL_DIRECTORY}/lib
             ARCHIVE DESTINATION ${INSTALL_DIRECTORY}/lib/static)
+
+install(FILES 
+    $<TARGET_FILE_DIR:kch_engine>/${CMAKE_SHARED_MODULE_PREFIX}glfw3${CMAKE_SHARED_LIBRARY_SUFFIX}
+    DESTINATION ${INSTALL_DIRECTORY}/bin)

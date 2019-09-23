@@ -19,6 +19,9 @@
 #include "utils/stopwatch.hpp"
 #include "utils/engine_assert.hpp"
 
+// Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
+#include <GL/glew.h>
+
 int main(int argc, char **argv) {
 
   Engine::Engine engine;
